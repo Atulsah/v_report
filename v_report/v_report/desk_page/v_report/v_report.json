@@ -1,0 +1,30 @@
+{
+ "cards": [
+  {
+   "hidden": 0,
+   "label": "Report",
+   "links": "[\n    {\n        \"dependencies\": [\n            \"Sales Order\"\n        ],\n        \"doctype\": \"Sales Order\",\n        \"is_query_report\": true,\n        \"label\": \"Sales Order Status\",\n        \"name\": \"Sales Order Status\",\n        \"type\": \"report\"\n    }\n]    "
+  }
+ ],
+ "cards_label": "Report",
+ "category": "Modules",
+ "charts": [],
+ "creation": "2021-03-11 17:38:00.741575",
+ "developer_mode_only": 0,
+ "disable_user_customization": 0,
+ "docstatus": 0,
+ "doctype": "Desk Page",
+ "extends_another_page": 0,
+ "hide_custom": 0,
+ "idx": 0,
+ "is_standard": 1,
+ "label": "V Report",
+ "modified": "2021-03-11 17:38:00.741575",
+ "modified_by": "Administrator",
+ "module": "V Report",
+ "name": "V Report",
+ "owner": "Administrator",
+ "pin_to_bottom": 0,
+ "pin_to_top": 0,
+ "shortcuts": []
+}

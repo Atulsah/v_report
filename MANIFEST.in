@@ -1,0 +1,18 @@
+include MANIFEST.in
+include requirements.txt
+include *.json
+include *.md
+include *.py
+include *.txt
+recursive-include v_report *.css
+recursive-include v_report *.csv
+recursive-include v_report *.html
+recursive-include v_report *.ico
+recursive-include v_report *.js
+recursive-include v_report *.json
+recursive-include v_report *.md
+recursive-include v_report *.png
+recursive-include v_report *.py
+recursive-include v_report *.svg
+recursive-include v_report *.txt
+recursive-exclude v_report *.pyc
