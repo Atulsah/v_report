@@ -21,10 +21,11 @@ frappe.query_reports["Sales Order Status Report"] = {
             "reqd":0
          },
 		 {
-		    "fieldname":"item_type",
+		    "fieldname":"report_type",
 		    "label": __("Report Type"),
 			"fieldtype": "Select",
-			"options": ["","Order-Item","Dispatched-Item"]
+			"options": ["Order-Item-Report","Dispatched-Item-Report","Complete-Report"],
+			"default": "Order-Item-Report",
 		},
 		{
 		    "fieldname":"from_date",
@@ -44,3 +45,4 @@ frappe.query_reports["Sales Order Status Report"] = {
 
 	]
 };
+
