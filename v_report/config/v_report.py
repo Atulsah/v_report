@@ -34,21 +34,9 @@ def get_data():
 				{
 					"type": "report",
 					"is_query_report": True,
-					"name": "Sales Order Status",
-					"doctype": "Sales Order",
-				},
-				{
-					"type": "report",
-					"is_query_report": True,
 					"name": "Ordered Item To Be Manufacture",
 					"doctype": "Sales Order",
-				},
-				{
-					"type": "report",
-					"is_query_report": True,
-					"name": "Purchase Order Status",
-					"doctype": "Purchase Order",
-				},				
+				},			
 			]
 		}
 	]
