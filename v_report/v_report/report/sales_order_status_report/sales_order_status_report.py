@@ -87,7 +87,7 @@ def complete_report(filters):
 
 		required_qty = round(i.qty - (i.delivered_qty + available_qty),2)
 
-		if i.delivered_qty > i.qty:
+		if i.delivered_qty >= i.qty:
 			available_qty,required_qty,pending_qty,pending_wt = 0,0,0,0
 	
 

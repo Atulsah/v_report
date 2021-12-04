@@ -12,6 +12,12 @@ def get_data():
 					"is_query_report": True,
 					"name": "Sales Order Status",
 					"doctype": "Sales Order"
+				},
+				{
+					"type": "report",
+					"is_query_report": True,
+					"name": "Material Receipt Status",
+					"doctype": "Stock Entry",
 				},	
 				{
 					"type": "report",
@@ -24,7 +30,25 @@ def get_data():
 					"is_query_report": True,
 					"name": "Sales Order Status Report",
 					"doctype": "Sales Order"
-				},						
+				},		
+				{
+					"type": "report",
+					"is_query_report": True,
+					"name": "Sales Order Status",
+					"doctype": "Sales Order",
+				},
+				{
+					"type": "report",
+					"is_query_report": True,
+					"name": "Ordered Item To Be Manufacture",
+					"doctype": "Sales Order",
+				},
+				{
+					"type": "report",
+					"is_query_report": True,
+					"name": "Purchase Order Status",
+					"doctype": "Purchase Order",
+				},				
 			]
 		}
 	]
