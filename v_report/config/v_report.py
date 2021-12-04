@@ -11,7 +11,7 @@ def get_data():
 					"type": "report",
 					"is_query_report": True,
 					"name": "Sales Order Status",
-					"doctype": "Sales Order"
+					"doctype": "Sales Order",
 				},
 				{
 					"type": "report",
@@ -23,7 +23,7 @@ def get_data():
 					"type": "report",
 					"is_query_report": True,
 					"name": "Purchase Order Status",
-					"doctype": "Purchase Order"
+					"doctype": "Purchase Order",
 				},	
 				{
 					"type": "report",
