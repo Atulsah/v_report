@@ -155,6 +155,8 @@ def ordered_item_report(filters):
 		data.append([i.name,i.delivery_date,i.customer,i.foreign_buyer_name,i.final_destination,i.p_o_no,i.p_o_date,i.item_code,i.item_name,i.qty,i.delivered_qty,pending_qty,pending_wt,available_qty,required_qty,i.weight_per_unit,i.pch_pallet_size])
 	return data
 
+#section close
+
 def get_item_conditions(filters):
 	conditions = []
 	if filters.get("item_group"):
