@@ -52,13 +52,13 @@ def dispatched_item_report(filters):
 				sub_item_stock_map[j.item_code]= flt(sub_item_stock_map[j.item_code] - sub_item_pending_qty)
 				current_item_stock = 0 if sub_item_stock_map[j.item_code] <= 0 else sub_item_stock_map[j.item_code]
 
-			required_qty = round(sub_item_qty - (sub_item_dlvr_qty + sub_item_stock_map[j.item_code]),2) if sub_item_stock_map[j.item_code] < sub_item_qty else 0
+			sub_item_required_qty = round(sub_item_qty - (sub_item_dlvr_qty + current_item_stock),2) if current_item_stock < sub_item_qty else 0
 
 			if sub_item_dlvr_qty > sub_item_qty:
-				required_qty,sub_item_pending_qty,pending_wt = 0,0,0
+				sub_item_required_qty,sub_item_pending_qty,pending_wt = 0,0,0
 
 
-			data.append([i.name,i.delivery_date,i.customer,i.foreign_buyer_name,i.final_destination,i.p_o_no,i.p_o_date,j.item_code,j.item_name,sub_item_qty,sub_item_dlvr_qty,sub_item_pending_qty,sub_item_pending_weight,current_item_stock,required_qty,item_weight_per_unit,"  "])
+			data.append([i.name,i.delivery_date,i.customer,i.foreign_buyer_name,i.final_destination,i.p_o_no,i.p_o_date,j.item_code,j.item_name,sub_item_qty,sub_item_dlvr_qty,sub_item_pending_qty,sub_item_pending_weight,current_item_stock,sub_item_required_qty,item_weight_per_unit,"  "])
 	return data
 
 def complete_report(filters):
@@ -91,7 +91,7 @@ def complete_report(filters):
 			available_qty,required_qty,pending_qty,pending_wt = 0,0,0,0
 	
 
-		#data.append([i.name,i.delivery_date,i.customer,i.foreign_buyer_name,i.final_destination,i.p_o_no,i.p_o_date,i.item_code,i.item_name,i.qty,i.delivered_qty,pending_qty,pending_wt,available_qty,required_qty,i.weight_per_unit,i.pch_pallet_size])
+		data.append([i.name,i.delivery_date,i.customer,i.foreign_buyer_name,i.final_destination,i.p_o_no,i.p_o_date,i.item_code,i.item_name,i.qty,i.delivered_qty,pending_qty,pending_wt,available_qty,required_qty,i.weight_per_unit,i.pch_pallet_size])
 	
 		pending_qty = round(i.qty-i.delivered_qty,2) if i.delivered_qty > 0 else i.qty
 		bom_items = get_sub_items(i.item_code)
@@ -111,7 +111,7 @@ def complete_report(filters):
 				sub_item_stock_map[j.item_code]= flt(sub_item_stock_map[j.item_code] - sub_item_pending_qty)
 				current_item_stock = 0 if sub_item_stock_map[j.item_code] <= 0 else sub_item_stock_map[j.item_code]
 
-			sub_item_required_qty = round(sub_item_qty - (sub_item_dlvr_qty + sub_item_stock_map[j.item_code]),2) if sub_item_stock_map[j.item_code] < sub_item_qty else 0
+			sub_item_required_qty = round(sub_item_qty - (sub_item_dlvr_qty + current_item_stock),2) if current_item_stock < sub_item_qty else 0
 
 			if sub_item_dlvr_qty > sub_item_qty:
 				sub_item_required_qty,sub_item_pending_qty,pending_wt = 0,0,0
@@ -119,7 +119,7 @@ def complete_report(filters):
 
 			data.append([i.name,i.delivery_date,"  ","  ","  ","  ","  ",j.item_code,j.item_name,sub_item_qty,sub_item_dlvr_qty,sub_item_pending_qty,sub_item_pending_weight,current_item_stock,sub_item_required_qty,item_weight_per_unit,"  "])	
 		
-		data.append([i.name,i.delivery_date,i.customer,i.foreign_buyer_name,i.final_destination,i.p_o_no,i.p_o_date,i.item_code,i.item_name,i.qty,i.delivered_qty,pending_qty,pending_wt,available_qty,required_qty,i.weight_per_unit,i.pch_pallet_size])
+		#data.append([i.name,i.delivery_date,i.customer,i.foreign_buyer_name,i.final_destination,i.p_o_no,i.p_o_date,i.item_code,i.item_name,i.qty,i.delivered_qty,pending_qty,pending_wt,available_qty,required_qty,i.weight_per_unit,i.pch_pallet_size])
 		
 	return data
 
