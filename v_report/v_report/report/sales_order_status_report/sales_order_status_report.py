@@ -33,6 +33,8 @@ def dispatched_item_report(filters):
 	data = []
 	items = get_ordered_items(filters)
 	sub_item_stock_map = {}
+	sub_item_pending_map = {}
+
 	for i in items:
 		pending_qty = round(i.qty-i.delivered_qty,2) if i.delivered_qty > 0 else i.qty
 		bom_items = get_sub_items(i.item_code)
@@ -40,100 +42,47 @@ def dispatched_item_report(filters):
 			sub_item_qty = i.qty * j.qty
 			sub_item_dlvr_qty = i.delivered_qty * j.qty
 			item_weight_per_unit = frappe.db.get_value("Item", {'name': j.item_code}, "weight_per_unit")
-			sub_item_stock_map[j.item_code] = sub_item_stock_map[j.item_code] if j.item_code in sub_item_stock_map else get_current_stock_from_bin(j.item_code)
-			sub_item_stock_qty = sub_item_stock_map[j.item_code]
+			#weight uom
+			sub_item_stock_map[j.item_code] = get_current_stock_from_bin(j.item_code) if i.item_code not in sub_item_stock_map else sub_item_stock_map[j.item_code]
 			sub_item_pending_qty = round(pending_qty * j.qty,2) if sub_item_dlvr_qty > 0 else sub_item_qty
 			sub_item_pending_weight = round(sub_item_pending_qty * item_weight_per_unit, 2)
-			
+			sub_item_pending_map[j.item_code] = 0 if j.item_code not in sub_item_pending_map else sub_item_pending_map[j.item_code]
+			sub_item_stock_qty = sub_item_stock_map[j.item_code]
+			sub_item_pending_qty = round((i.qty-i.delivered_qty)*j.qty,2) if i.delivered_qty > 0 else i.qty*j.qty
+		
 			if sub_item_stock_qty >= sub_item_pending_qty:
-				current_item_stock = sub_item_pending_qty
-				sub_item_stock_map[j.item_code]= flt(sub_item_stock_map[j.item_code]-sub_item_pending_qty)
+				sub_item_stock_map[j.item_code]= sub_item_stock_map[j.item_code] - sub_item_pending_qty
+				sub_item_pending_map[j.item_code]= sub_item_pending_map[j.item_code] + sub_item_pending_qty
+				sub_item_required_qty = 0 if (sub_item_pending_qty < sub_item_stock_map[j.item_code]) else item_pending_stock_map[j.item_code]
+				sub_item_stock_qty = 0 if sub_item_stock_qty <=0 else sub_item_stock_qty
 			else:
-				sub_item_stock_map[j.item_code]= flt(sub_item_stock_map[j.item_code] - sub_item_pending_qty)
-				current_item_stock = 0 if sub_item_stock_map[j.item_code] <= 0 else sub_item_stock_map[j.item_code]
+				sub_item_stock_map[j.item_code]= sub_item_stock_map[j.item_code] - sub_item_pending_qty
+				sub_item_pending_map[j.item_code]= sub_item_pending_map[j.item_code] + sub_item_pending_qty
+				sub_item_required_qty = 0 if (sub_item_pending_qty < sub_item_stock_map[j.item_code]) else item_pending_stock_map[j.item_code]
+				sub_item_stock_qty = 0 if sub_item_stock_qty <=0 else sub_item_stock_qty
 
-			sub_item_required_qty = round(sub_item_qty - (sub_item_dlvr_qty + sub_item_stock_map[j.item_code]),2) if sub_item_stock_map[j.item_code] < sub_item_qty else 0
 
 			if sub_item_dlvr_qty > sub_item_qty:
 				sub_item_required_qty,sub_item_pending_qty,pending_wt = 0,0,0
 
 
-			data.append([i.name,i.delivery_date,i.customer,i.foreign_buyer_name,i.final_destination,i.p_o_no,i.p_o_date,j.item_code,j.item_name,sub_item_qty,sub_item_dlvr_qty,sub_item_pending_qty,sub_item_pending_weight,current_item_stock,sub_item_required_qty,item_weight_per_unit,"  "])
+			data.append([i.name,i.delivery_date,i.customer,i.foreign_buyer_name,i.final_destination,i.p_o_no,i.p_o_date,j.item_code,j.item_name,item_weight_per_unit,j.uom,sub_item_qty,sub_item_dlvr_qty,sub_item_pending_qty,sub_item_pending_weight,sub_item_stock_qty,sub_item_required_qty,"  "])	
 	return data
 
 def complete_report(filters):
 	data = []
 	items = get_ordered_items(filters)
-	item_stock_map = {}
-	sub_item_stock_map = {}
-	for i in items:
-		weight_per_unit = frappe.db.get_value("Item", {'name': i.item_code}, "weight_per_unit")
-		stock_qty = get_current_stock_from_bin(i.item_code)
-		pending_qty = round(i.qty-i.delivered_qty,2) if i.delivered_qty > 0 else i.qty
-		pending_wt = round(pending_qty * weight_per_unit, 2)
-		if stock_qty > pending_qty:
-			if i.item_code in item_stock_map:
-				item_stock_map[i.item_code]= flt(item_stock_map[i.item_code]+pending_qty)
-				if stock_qty > item_stock_map[i.item_code]:
-					available_qty = pending_qty
-				else:
-					available_qty = flt(stock_qty -(item_stock_map[i.item_code]-pending_qty))	
-			else:
-				item_stock_map[i.item_code]= pending_qty
-				available_qty = pending_qty						
-
-		else:
-			available_qty = stock_qty	if stock_qty else 0
-
-		required_qty = round(i.qty - (i.delivered_qty + available_qty),2)
-
-		if i.delivered_qty >= i.qty:
-			available_qty,required_qty,pending_qty,pending_wt = 0,0,0,0
-	
-
-		data.append([i.name,i.delivery_date,i.customer,i.foreign_buyer_name,i.final_destination,i.p_o_no,i.p_o_date,i.item_code,i.item_name,i.qty,i.delivered_qty,pending_qty,pending_wt,available_qty,required_qty,i.weight_per_unit,i.pch_pallet_size])
-	
-		pending_qty = round(i.qty-i.delivered_qty,2) if i.delivered_qty > 0 else i.qty
-		bom_items = get_sub_items(i.item_code)
-		for j in bom_items:
-			sub_item_qty = i.qty * j.qty
-			sub_item_dlvr_qty = i.delivered_qty * j.qty
-			item_weight_per_unit = frappe.db.get_value("Item", {'name': j.item_code}, "weight_per_unit")
-			sub_item_stock_map[j.item_code] = sub_item_stock_map[j.item_code] if j.item_code in sub_item_stock_map else get_current_stock_from_bin(j.item_code)
-			sub_item_stock_qty = sub_item_stock_map[j.item_code]
-			sub_item_pending_qty = round(pending_qty * j.qty,2) if sub_item_dlvr_qty > 0 else sub_item_qty
-			sub_item_pending_weight = round(sub_item_pending_qty * item_weight_per_unit, 2)
-			
-			if sub_item_stock_qty >= sub_item_pending_qty:
-				current_item_stock = sub_item_pending_qty
-				sub_item_stock_map[j.item_code]= flt(sub_item_stock_map[j.item_code]-sub_item_pending_qty)
-			else:
-				sub_item_stock_map[j.item_code]= flt(sub_item_stock_map[j.item_code] - sub_item_pending_qty)
-				current_item_stock = 0 if sub_item_stock_map[j.item_code] <= 0 else sub_item_stock_map[j.item_code]
-
-			sub_item_required_qty = round(sub_item_qty - (sub_item_dlvr_qty + current_item_stock),2) if current_item_stock < sub_item_qty else 0
-
-			if sub_item_dlvr_qty > sub_item_qty:
-				sub_item_required_qty,sub_item_pending_qty,pending_wt = 0,0,0
-
-
-			data.append([i.name,i.delivery_date,"  ","  ","  ","  ","  ",j.item_code,j.item_name,sub_item_qty,sub_item_dlvr_qty,sub_item_pending_qty,sub_item_pending_weight,current_item_stock,sub_item_required_qty,item_weight_per_unit,"  "])	
-		
-		#data.append([i.name,i.delivery_date,i.customer,i.foreign_buyer_name,i.final_destination,i.p_o_no,i.p_o_date,i.item_code,i.item_name,i.qty,i.delivered_qty,pending_qty,pending_wt,available_qty,required_qty,i.weight_per_unit,i.pch_pallet_size])
-		
-	return data
-
-def ordered_item_report(filters):
-	data = []
-	items = get_ordered_items(filters)
+	#item_stock_map = {}
 	item_pending_stock_map = {}
 	item_current_stock_map = {}
+	sub_item_stock_map = {}
+	sub_item_pending_map = {}
+
 	for i in items:
 		weight_per_unit = frappe.db.get_value("Item", {'name': i.item_code}, "weight_per_unit")
+		#weight uom
+		stock_qty = get_current_stock_from_bin(i.item_code)
 		item_current_stock_map[i.item_code] = get_current_stock_from_bin(i.item_code) if i.item_code not in item_current_stock_map else item_current_stock_map[i.item_code]
-		#item_current_stock = item_current_stock_map[i.item_code]
-		#print(item_current_stock)
-		#print("/n/n/n/n/n/n")
 		pending_qty = round(i.qty-i.delivered_qty,2) if i.delivered_qty > 0 else i.qty
 		pending_wt = round(pending_qty * weight_per_unit, 2)
 		item_pending_stock_map[i.item_code] = 0 if i.item_code not in item_pending_stock_map else item_pending_stock_map[i.item_code]
@@ -145,17 +94,86 @@ def ordered_item_report(filters):
 			item_current_stock_map[i.item_code]= item_current_stock_map[i.item_code] - current_pending_qty
 			item_pending_stock_map[i.item_code]= item_pending_stock_map[i.item_code] + current_pending_qty
 			required_quantity = 0 if (current_pending_qty < item_current_stock_map[i.item_code]) else item_pending_stock_map[i.item_code]
+			current_stock_qty = 0 if current_stock_qty <=0 else current_stock_qty
 		else:
 			item_current_stock_map[i.item_code]= item_current_stock_map[i.item_code] - current_pending_qty
 			item_pending_stock_map[i.item_code]= item_pending_stock_map[i.item_code] + current_pending_qty
 			required_quantity = 0 if (current_pending_qty < item_current_stock_map[i.item_code]) else item_pending_stock_map[i.item_code]
+			current_stock_qty = 0 if current_stock_qty <=0 else current_stock_qty
+
+		if i.delivered_qty > i.qty:
+			pending_qty,pending_wt = 0,0,0,0
+
+
+		data.append([i.name,i.delivery_date,i.customer,i.foreign_buyer_name,i.final_destination,i.p_o_no,i.p_o_date,i.item_code,i.item_name,i.weight_per_unit,i.uom,i.qty,i.delivered_qty,current_pending_qty,pending_wt,current_stock_qty,required_quantity,i.pch_pallet_size])
+	
+		pending_qty = round(i.qty-i.delivered_qty,2) if i.delivered_qty > 0 else i.qty
+		bom_items = get_sub_items(i.item_code)
+		for j in bom_items:
+			sub_item_qty = i.qty * j.qty
+			sub_item_dlvr_qty = i.delivered_qty * j.qty
+			item_weight_per_unit = frappe.db.get_value("Item", {'name': j.item_code}, "weight_per_unit")
+			#weight uom
+			sub_item_stock_map[j.item_code] = get_current_stock_from_bin(j.item_code) if i.item_code not in sub_item_stock_map else sub_item_stock_map[j.item_code]
+			sub_item_pending_qty = round(pending_qty * j.qty,2) if sub_item_dlvr_qty > 0 else sub_item_qty
+			sub_item_pending_weight = round(sub_item_pending_qty * item_weight_per_unit, 2)
+			sub_item_pending_map[j.item_code] = 0 if j.item_code not in sub_item_pending_map else sub_item_pending_map[j.item_code]
+			sub_item_stock_qty = sub_item_stock_map[j.item_code]
+			sub_item_pending_qty = round((i.qty-i.delivered_qty)*j.qty,2) if i.delivered_qty > 0 else i.qty*j.qty
+		
+			if sub_item_stock_qty >= sub_item_pending_qty:
+				sub_item_stock_map[j.item_code]= sub_item_stock_map[j.item_code] - sub_item_pending_qty
+				sub_item_pending_map[j.item_code]= sub_item_pending_map[j.item_code] + sub_item_pending_qty
+				sub_item_required_qty = 0 if (sub_item_pending_qty < sub_item_stock_map[j.item_code]) else item_pending_stock_map[j.item_code]
+				sub_item_stock_qty = 0 if sub_item_stock_qty <=0 else sub_item_stock_qty
+			else:
+				sub_item_stock_map[j.item_code]= sub_item_stock_map[j.item_code] - sub_item_pending_qty
+				sub_item_pending_map[j.item_code]= sub_item_pending_map[j.item_code] + sub_item_pending_qty
+				sub_item_required_qty = 0 if (sub_item_pending_qty < sub_item_stock_map[j.item_code]) else item_pending_stock_map[j.item_code]
+				sub_item_stock_qty = 0 if sub_item_stock_qty <=0 else sub_item_stock_qty
+
+
+			if sub_item_dlvr_qty > sub_item_qty:
+				sub_item_required_qty,sub_item_pending_qty,pending_wt = 0,0,0
+
+
+			data.append([i.name,i.delivery_date,"  ","  ","  ",j.p_o_no,j.p_o_date,j.item_code,j.item_name,item_weight_per_unit,j.uom,sub_item_qty,sub_item_dlvr_qty,sub_item_pending_qty,sub_item_pending_weight,sub_item_stock_qty,sub_item_required_qty,"  "])	
+		
+		
+	return data
+
+def ordered_item_report(filters):
+	data = []
+	items = get_ordered_items(filters)
+	item_pending_stock_map = {}
+	item_current_stock_map = {}
+	for i in items:
+		weight_per_unit = frappe.db.get_value("Item", {'name': i.item_code}, "weight_per_unit")
+		item_current_stock_map[i.item_code] = get_current_stock_from_bin(i.item_code) if i.item_code not in item_current_stock_map else item_current_stock_map[i.item_code]
+		pending_qty = round(i.qty-i.delivered_qty,2) if i.delivered_qty > 0 else i.qty
+		pending_wt = round(pending_qty * weight_per_unit, 2)
+		item_pending_stock_map[i.item_code] = 0 if i.item_code not in item_pending_stock_map else item_pending_stock_map[i.item_code]
+		current_stock_qty = item_current_stock_map[i.item_code]
+		current_pending_qty = round(i.qty-i.delivered_qty,2) if i.delivered_qty > 0 else i.qty
+
+
+		if current_stock_qty >= current_pending_qty:
+			item_current_stock_map[i.item_code]= item_current_stock_map[i.item_code] - current_pending_qty
+			item_pending_stock_map[i.item_code]= item_pending_stock_map[i.item_code] + current_pending_qty
+			required_quantity = 0 if (current_pending_qty < item_current_stock_map[i.item_code]) else item_pending_stock_map[i.item_code]
+			current_stock_qty = 0 if current_stock_qty <=0 else current_stock_qty
+		else:
+			item_current_stock_map[i.item_code]= item_current_stock_map[i.item_code] - current_pending_qty
+			item_pending_stock_map[i.item_code]= item_pending_stock_map[i.item_code] + current_pending_qty
+			required_quantity = 0 if (current_pending_qty < item_current_stock_map[i.item_code]) else item_pending_stock_map[i.item_code]
+			current_stock_qty = 0 if current_stock_qty <=0 else current_stock_qty
 
 
 		if i.delivered_qty > i.qty:
 			pending_qty,pending_wt = 0,0,0,0
 	
 
-		data.append([i.name,i.delivery_date,i.customer,i.foreign_buyer_name,i.final_destination,i.p_o_no,i.p_o_date,i.item_code,i.item_name,i.qty,i.delivered_qty,current_pending_qty,pending_wt,current_stock_qty,required_quantity,i.weight_per_unit,i.pch_pallet_size])
+		data.append([i.name,i.delivery_date,i.customer,i.foreign_buyer_name,i.final_destination,i.p_o_no,i.p_o_date,i.item_code,i.item_name,i.weight_per_unit,i.uom,i.qty,i.delivered_qty,current_pending_qty,pending_wt,current_stock_qty,required_quantity,i.pch_pallet_size])
 	return data
 
 #section close
@@ -168,7 +186,7 @@ def get_item_conditions(filters):
 	return "and {}".format(" and ".join(conditions)) if conditions else ""
 
 def get_ordered_items(filters):
-	return frappe.db.sql("""select so.customer,so.foreign_buyer_name,so.final_destination,so_item.p_o_no,so_item.p_o_date,so.name,so_item.item_code,so_item.item_name,so_item.qty,so_item.delivered_qty,so_item.delivery_date,so_item.weight_per_unit,so_item.pch_pallet_size from `tabSales Order Item` so_item,`tabSales Order` so where so.transaction_date BETWEEN %(from_date)s and %(to_date)s and so.company=%(company)s and so_item.parent=so.name  and so_item.pch_pallet_size >=1 and so.docstatus=1 {itm_conditions} order by so.delivery_date Asc """.format(itm_conditions=get_item_conditions(filters)),{'from_date':filters.from_date,'to_date':filters.to_date,'company':filters.company,'item_group': filters.item_group},as_dict=1) 
+	return frappe.db.sql("""select so.customer,so.foreign_buyer_name,so.final_destination,so_item.p_o_no,so_item.p_o_date,so.name,so_item.item_code,so_item.item_name,so_item.uom,so_item.qty,so_item.delivered_qty,so_item.delivery_date,so_item.weight_per_unit,so_item.pch_pallet_size from `tabSales Order Item` so_item,`tabSales Order` so where so.transaction_date BETWEEN %(from_date)s and %(to_date)s and so.company=%(company)s and so_item.parent=so.name  and so_item.pch_pallet_size >=1 and so.docstatus=1 {itm_conditions} order by so.delivery_date Asc """.format(itm_conditions=get_item_conditions(filters)),{'from_date':filters.from_date,'to_date':filters.to_date,'company':filters.company,'item_group': filters.item_group},as_dict=1) 
 
 def get_sub_items(item_code):
 	return frappe.db.sql("""select bom.item,bom_item.item_code,bom_item.item_name,bom_item.qty,bom_item.uom from `tabBOM Item` bom_item,`tabBOM` bom where bom_item.parent=bom.name and bom.item = %s """,(item_code),as_dict=1)
@@ -239,15 +257,28 @@ def get_columns():
 		"label": _("Item Name"),
 		"fieldtype": "Data",
 		"width": 100
-	})		
+	})
+	columns.append({
+		"fieldname": "weight_per_unit",
+		"label": _("Unit Weight"),
+		"fieldtype": "Float",
+		"width": 75,
+		"precision": 2
+	})
+	columns.append({
+		"fieldname": "uom",
+		"label": _("UOM"),
+		"fieldtype": "Data",
+		"width": 75,
+		"precision": 2
+	})
 	columns.append({
 		"fieldname": "order_qty",
 		"label": _("P.O Qty"),
 		"fieldtype": "Float",
 		"width": 75,
 		"precision": 2
-	})
-	
+	})	
 	columns.append({
 		"fieldname": "delivered_qty",
 		"label": _("Dlvrd Qty"),
@@ -279,13 +310,6 @@ def get_columns():
 	columns.append({
 		"fieldname": "required_qty",
 		"label": _("Required"),
-		"fieldtype": "Float",
-		"width": 75,
-		"precision": 2
-	})
-	columns.append({
-		"fieldname": "weight_per_unit",
-		"label": _("Weight Per Unit"),
 		"fieldtype": "Float",
 		"width": 75,
 		"precision": 2
