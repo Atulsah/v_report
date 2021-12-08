@@ -53,12 +53,12 @@ def dispatched_item_report(filters):
 			if sub_item_stock_qty >= sub_item_pending_qty:
 				sub_item_stock_map[j.item_code]= sub_item_stock_map[j.item_code] - sub_item_pending_qty
 				sub_item_pending_map[j.item_code]= sub_item_pending_map[j.item_code] + sub_item_pending_qty
-				sub_item_required_qty = 0 if (sub_item_pending_qty < sub_item_stock_map[j.item_code]) else item_pending_stock_map[j.item_code]
+				sub_item_required_qty = 0 if (sub_item_pending_qty < sub_item_stock_map[j.item_code]) else sub_item_pending_map[j.item_code]
 				sub_item_stock_qty = 0 if sub_item_stock_qty <=0 else sub_item_stock_qty
 			else:
 				sub_item_stock_map[j.item_code]= sub_item_stock_map[j.item_code] - sub_item_pending_qty
 				sub_item_pending_map[j.item_code]= sub_item_pending_map[j.item_code] + sub_item_pending_qty
-				sub_item_required_qty = 0 if (sub_item_pending_qty < sub_item_stock_map[j.item_code]) else item_pending_stock_map[j.item_code]
+				sub_item_required_qty = 0 if (sub_item_pending_qty < sub_item_stock_map[j.item_code]) else sub_item_pending_map[j.item_code]
 				sub_item_stock_qty = 0 if sub_item_stock_qty <=0 else sub_item_stock_qty
 
 
@@ -124,12 +124,12 @@ def complete_report(filters):
 			if sub_item_stock_qty >= sub_item_pending_qty:
 				sub_item_stock_map[j.item_code]= sub_item_stock_map[j.item_code] - sub_item_pending_qty
 				sub_item_pending_map[j.item_code]= sub_item_pending_map[j.item_code] + sub_item_pending_qty
-				sub_item_required_qty = 0 if (sub_item_pending_qty < sub_item_stock_map[j.item_code]) else item_pending_stock_map[j.item_code]
+				sub_item_required_qty = 0 if (sub_item_pending_qty < sub_item_stock_map[j.item_code]) else sub_item_pending_map[j.item_code]
 				sub_item_stock_qty = 0 if sub_item_stock_qty <=0 else sub_item_stock_qty
 			else:
 				sub_item_stock_map[j.item_code]= sub_item_stock_map[j.item_code] - sub_item_pending_qty
 				sub_item_pending_map[j.item_code]= sub_item_pending_map[j.item_code] + sub_item_pending_qty
-				sub_item_required_qty = 0 if (sub_item_pending_qty < sub_item_stock_map[j.item_code]) else item_pending_stock_map[j.item_code]
+				sub_item_required_qty = 0 if (sub_item_pending_qty < sub_item_stock_map[j.item_code]) else sub_item_pending_map[j.item_code]
 				sub_item_stock_qty = 0 if sub_item_stock_qty <=0 else sub_item_stock_qty
 
 
