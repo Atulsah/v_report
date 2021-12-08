@@ -43,7 +43,7 @@ def dispatched_item_report(filters):
 			sub_item_dlvr_qty = i.delivered_qty * j.qty
 			item_weight_per_unit = frappe.db.get_value("Item", {'name': j.item_code}, "weight_per_unit")
 			#weight uom
-			sub_item_stock_map[j.item_code] = get_current_stock_from_bin(j.item_code) if i.item_code not in sub_item_stock_map else sub_item_stock_map[j.item_code]
+			sub_item_stock_map[j.item_code] = get_current_stock_from_bin(j.item_code) if j.item_code not in sub_item_stock_map else sub_item_stock_map[j.item_code]
 			sub_item_pending_qty = round(pending_qty * j.qty,2) if sub_item_dlvr_qty > 0 else sub_item_qty
 			sub_item_pending_weight = round(sub_item_pending_qty * item_weight_per_unit, 2)
 			sub_item_pending_map[j.item_code] = 0 if j.item_code not in sub_item_pending_map else sub_item_pending_map[j.item_code]
