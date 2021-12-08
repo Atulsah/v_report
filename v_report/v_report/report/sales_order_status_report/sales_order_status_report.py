@@ -120,18 +120,17 @@ def complete_report(filters):
 			sub_item_pending_weight = round(sub_item_pending_qty * item_weight_per_unit, 2)
 			sub_item_pending_map[j.item_code] = 0 if j.item_code not in sub_item_pending_map else sub_item_pending_map[j.item_code]
 			sub_item_stock_qty = sub_item_stock_map[j.item_code]
-			sub_item_pending_qty = round((i.qty-i.delivered_qty)*j.qty,2) if i.delivered_qty > 0 else i.qty*j.qty
 		
 			if sub_item_stock_qty >= sub_item_pending_qty:
+				sub_item_stock_qty = 0 if sub_item_stock_qty <=sub_item_pending_qty else sub_item_stock_qty
+				sub_item_required_qty = 0 if (sub_item_pending_qty <= sub_item_stock_map[j.item_code]) else sub_item_pending_map[j.item_code]+sub_item_pending_qty
 				sub_item_stock_map[j.item_code]= sub_item_stock_map[j.item_code] - sub_item_pending_qty
 				sub_item_pending_map[j.item_code]= sub_item_pending_map[j.item_code] + sub_item_pending_qty
-				sub_item_required_qty = 0 if (sub_item_pending_qty < sub_item_stock_map[j.item_code]) else sub_item_pending_map[j.item_code]
-				sub_item_stock_qty = 0 if sub_item_stock_qty <=0 else sub_item_stock_qty
 			else:
-				sub_item_stock_map[j.item_code]= sub_item_stock_map[j.item_code] - sub_item_pending_qty
-				sub_item_pending_map[j.item_code]= sub_item_pending_map[j.item_code] + sub_item_pending_qty
-				sub_item_required_qty = 0 if (sub_item_pending_qty < sub_item_stock_map[j.item_code]) else sub_item_pending_map[j.item_code]
 				sub_item_stock_qty = 0 if sub_item_stock_qty <=0 else sub_item_stock_qty
+				sub_item_pending_map[j.item_code]= sub_item_pending_map[j.item_code] + (sub_item_pending_qty if sub_item_stock_qty <= 0 else (sub_item_pending_qty - sub_item_stock_qty))
+				sub_item_required_qty = 0 if (sub_item_pending_qty < sub_item_stock_map[j.item_code]) else sub_item_pending_map[j.item_code]
+				sub_item_stock_map[j.item_code]= sub_item_stock_map[j.item_code] - sub_item_pending_qty
 
 
 			if sub_item_dlvr_qty > sub_item_qty:
