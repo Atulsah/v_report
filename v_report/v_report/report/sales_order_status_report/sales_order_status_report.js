@@ -44,5 +44,6 @@ frappe.query_reports["Sales Order Status Report"] = {
 		}
 
 	]
+
 };
 

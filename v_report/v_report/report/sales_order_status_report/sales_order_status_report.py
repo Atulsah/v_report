@@ -89,17 +89,17 @@ def complete_report(filters):
 		current_stock_qty = item_current_stock_map[i.item_code]
 		current_pending_qty = round(i.qty-i.delivered_qty,2) if i.delivered_qty > 0 else i.qty
 
-
 		if current_stock_qty >= current_pending_qty:
+			current_stock_qty = 0 if current_stock_qty <=current_pending_qty else current_stock_qty
+			required_quantity = 0 if (current_pending_qty <= item_current_stock_map[i.item_code]) else item_pending_stock_map[i.item_code]+current_pending_qty
 			item_current_stock_map[i.item_code]= item_current_stock_map[i.item_code] - current_pending_qty
 			item_pending_stock_map[i.item_code]= item_pending_stock_map[i.item_code] + current_pending_qty
-			required_quantity = 0 if (current_pending_qty < item_current_stock_map[i.item_code]) else item_pending_stock_map[i.item_code]
-			current_stock_qty = 0 if current_stock_qty <=0 else current_stock_qty
 		else:
-			item_current_stock_map[i.item_code]= item_current_stock_map[i.item_code] - current_pending_qty
-			item_pending_stock_map[i.item_code]= item_pending_stock_map[i.item_code] + current_pending_qty
-			required_quantity = 0 if (current_pending_qty < item_current_stock_map[i.item_code]) else item_pending_stock_map[i.item_code]
 			current_stock_qty = 0 if current_stock_qty <=0 else current_stock_qty
+			item_pending_stock_map[i.item_code]= item_pending_stock_map[i.item_code] + (current_pending_qty if current_stock_qty <= 0 else (current_pending_qty - current_stock_qty))
+			required_quantity = 0 if (current_pending_qty < item_current_stock_map[i.item_code]) else item_pending_stock_map[i.item_code]
+			item_current_stock_map[i.item_code]= item_current_stock_map[i.item_code] - current_pending_qty
+
 
 		if i.delivered_qty > i.qty:
 			pending_qty,pending_wt = 0,0,0,0
@@ -157,17 +157,16 @@ def ordered_item_report(filters):
 		current_stock_qty = item_current_stock_map[i.item_code]
 		current_pending_qty = round(i.qty-i.delivered_qty,2) if i.delivered_qty > 0 else i.qty
 
-
 		if current_stock_qty >= current_pending_qty:
+			current_stock_qty = 0 if current_stock_qty <=current_pending_qty else current_stock_qty
+			required_quantity = 0 if (current_pending_qty <= item_current_stock_map[i.item_code]) else item_pending_stock_map[i.item_code]+current_pending_qty
 			item_current_stock_map[i.item_code]= item_current_stock_map[i.item_code] - current_pending_qty
 			item_pending_stock_map[i.item_code]= item_pending_stock_map[i.item_code] + current_pending_qty
-			required_quantity = 0 if (current_pending_qty < item_current_stock_map[i.item_code]) else item_pending_stock_map[i.item_code]
-			current_stock_qty = 0 if current_stock_qty <=0 else current_stock_qty
 		else:
-			item_current_stock_map[i.item_code]= item_current_stock_map[i.item_code] - current_pending_qty
-			item_pending_stock_map[i.item_code]= item_pending_stock_map[i.item_code] + current_pending_qty
-			required_quantity = 0 if (current_pending_qty < item_current_stock_map[i.item_code]) else item_pending_stock_map[i.item_code]
 			current_stock_qty = 0 if current_stock_qty <=0 else current_stock_qty
+			item_pending_stock_map[i.item_code]= item_pending_stock_map[i.item_code] + (current_pending_qty if current_stock_qty <= 0 else (current_pending_qty - current_stock_qty))
+			required_quantity = 0 if (current_pending_qty < item_current_stock_map[i.item_code]) else item_pending_stock_map[i.item_code]
+			item_current_stock_map[i.item_code]= item_current_stock_map[i.item_code] - current_pending_qty
 
 
 		if i.delivered_qty > i.qty:
@@ -317,7 +316,7 @@ def get_columns():
 	})
 	columns.append({
 		"fieldname": "pcs_per_crate",
-		"label": _("Pcs/Set per Crate"),
+		"label": _("Crate Size"),
 		"fieldtype": "data",
 		"width": 75,
 		"precision": 2
