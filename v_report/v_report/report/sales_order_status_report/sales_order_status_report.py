@@ -48,7 +48,7 @@ def dispatched_item_report(filters):
 			sub_item_pending_weight = round(sub_item_pending_qty * sub_item_weight_per_unit, 2)
 			sub_item_pending_map[j.item_code] = 0 if j.item_code not in sub_item_pending_map else sub_item_pending_map[j.item_code]
 			sub_item_stock_qty = sub_item_stock_map[j.item_code]
-			sub_item_stock_qty_wt = round(sub_item_stock_qty * sub_item_weight_per_unit, 2)
+			sub_item_stock_qty_wt = 0 if sub_item_stock_qty <=0 else round(sub_item_stock_qty * sub_item_weight_per_unit, 2)
 			sub_item_crate_size = round(i.pch_pallet_size * j.qty,2)
 		
 			if sub_item_stock_qty >= sub_item_pending_qty:
@@ -89,7 +89,7 @@ def complete_report(filters):
 		pending_wt = round(pending_qty * weight_per_unit, 2)
 		item_pending_stock_map[i.item_code] = 0 if i.item_code not in item_pending_stock_map else item_pending_stock_map[i.item_code]
 		current_stock_qty = item_current_stock_map[i.item_code]
-		stock_qty_wt = round(current_stock_qty * weight_per_unit, 2)
+		stock_qty_wt = 0 if current_stock_qty <=0 else round(current_stock_qty * weight_per_unit, 2)
 		current_pending_qty = round(i.qty-i.delivered_qty,2) if i.delivered_qty > 0 else i.qty
 
 		if current_stock_qty >= current_pending_qty:
@@ -122,7 +122,7 @@ def complete_report(filters):
 			sub_item_pending_weight = round(sub_item_pending_qty * sub_item_weight_per_unit, 2)
 			sub_item_pending_map[j.item_code] = 0 if j.item_code not in sub_item_pending_map else sub_item_pending_map[j.item_code]
 			sub_item_stock_qty = sub_item_stock_map[j.item_code]
-			sub_item_stock_qty_wt = round(sub_item_stock_qty * sub_item_weight_per_unit, 2)
+			sub_item_stock_qty_wt = 0 if sub_item_stock_qty <=0 else round(sub_item_stock_qty * sub_item_weight_per_unit, 2)
 			sub_item_crate_size = round(i.pch_pallet_size * j.qty,2)
 
 			if sub_item_stock_qty >= sub_item_pending_qty:
