@@ -48,6 +48,8 @@ def dispatched_item_report(filters):
 			sub_item_pending_weight = round(sub_item_pending_qty * sub_item_weight_per_unit, 2)
 			sub_item_pending_map[j.item_code] = 0 if j.item_code not in sub_item_pending_map else sub_item_pending_map[j.item_code]
 			sub_item_stock_qty = sub_item_stock_map[j.item_code]
+			sub_item_stock_qty_wt = round(sub_item_stock_qty * sub_item_weight_per_unit, 2)
+			sub_item_crate_size = round(i.pch_pallet_size * j.qty,2)
 		
 			if sub_item_stock_qty >= sub_item_pending_qty:
 				sub_item_stock_qty = 0 if sub_item_stock_qty <=sub_item_pending_qty else sub_item_stock_qty
@@ -66,7 +68,7 @@ def dispatched_item_report(filters):
 				sub_item_required_qty,sub_item_pending_qty,pending_wt = 0,0,0
 
 
-			data.append([i.name,i.delivery_date,i.customer,i.foreign_buyer_name,i.final_destination,i.p_o_no,i.p_o_date,j.item_code,j.item_name,sub_item_weight_per_unit,sub_item_weight_uom,sub_item_qty,sub_item_dlvr_qty,sub_item_pending_qty,sub_item_pending_weight,sub_item_stock_qty,sub_item_required_qty,"  "])	
+			data.append([i.name,i.delivery_date,i.customer,i.foreign_buyer_name,i.final_destination,i.p_o_no,i.p_o_date,j.item_code,j.item_name,sub_item_weight_per_unit,sub_item_weight_uom,sub_item_qty,sub_item_dlvr_qty,sub_item_pending_qty,sub_item_pending_weight,sub_item_stock_qty,sub_item_stock_qty_wt,sub_item_required_qty,sub_item_crate_size])	
 	return data
 
 def complete_report(filters):
@@ -87,6 +89,7 @@ def complete_report(filters):
 		pending_wt = round(pending_qty * weight_per_unit, 2)
 		item_pending_stock_map[i.item_code] = 0 if i.item_code not in item_pending_stock_map else item_pending_stock_map[i.item_code]
 		current_stock_qty = item_current_stock_map[i.item_code]
+		stock_qty_wt = round(current_stock_qty * weight_per_unit, 2)
 		current_pending_qty = round(i.qty-i.delivered_qty,2) if i.delivered_qty > 0 else i.qty
 
 		if current_stock_qty >= current_pending_qty:
@@ -105,7 +108,7 @@ def complete_report(filters):
 			pending_qty,pending_wt = 0,0,0,0
 
 
-		data.append([i.name,i.delivery_date,i.customer,i.foreign_buyer_name,i.final_destination,i.p_o_no,i.p_o_date,i.item_code,i.item_name,i.weight_per_unit,item_weight_uom,i.qty,i.delivered_qty,current_pending_qty,pending_wt,current_stock_qty,required_quantity,i.pch_pallet_size])
+		data.append([i.name,i.delivery_date,i.customer,i.foreign_buyer_name,i.final_destination,i.p_o_no,i.p_o_date,i.item_code,i.item_name,i.weight_per_unit,item_weight_uom,i.qty,i.delivered_qty,current_pending_qty,pending_wt,current_stock_qty,stock_qty_wt,required_quantity,i.pch_pallet_size])
 	
 		pending_qty = round(i.qty-i.delivered_qty,2) if i.delivered_qty > 0 else i.qty
 		bom_items = get_sub_items(i.item_code)
@@ -119,6 +122,8 @@ def complete_report(filters):
 			sub_item_pending_weight = round(sub_item_pending_qty * sub_item_weight_per_unit, 2)
 			sub_item_pending_map[j.item_code] = 0 if j.item_code not in sub_item_pending_map else sub_item_pending_map[j.item_code]
 			sub_item_stock_qty = sub_item_stock_map[j.item_code]
+			sub_item_stock_qty_wt = round(sub_item_stock_qty * sub_item_weight_per_unit, 2)
+			sub_item_crate_size = round(i.pch_pallet_size * j.qty,2)
 
 			if sub_item_stock_qty >= sub_item_pending_qty:
 				sub_item_stock_qty = 0 if sub_item_stock_qty <=sub_item_pending_qty else sub_item_stock_qty
@@ -137,7 +142,7 @@ def complete_report(filters):
 				sub_item_required_qty,sub_item_pending_qty,pending_wt = 0,0,0
 
 
-			data.append([i.name,i.delivery_date,"  ","  ","  ",j.p_o_no,j.p_o_date,j.item_code,j.item_name,sub_item_weight_per_unit,sub_item_weight_uom,sub_item_qty,sub_item_dlvr_qty,sub_item_pending_qty,sub_item_pending_weight,sub_item_stock_qty,sub_item_required_qty,"  "])	
+			data.append([i.name,i.delivery_date,"  ","  ","  ",j.p_o_no,j.p_o_date,j.item_code,j.item_name,sub_item_weight_per_unit,sub_item_weight_uom,sub_item_qty,sub_item_dlvr_qty,sub_item_pending_qty,sub_item_pending_weight,sub_item_stock_qty,sub_item_stock_qty_wt,sub_item_required_qty,sub_item_crate_size])	
 		
 		
 	return data
@@ -155,6 +160,7 @@ def ordered_item_report(filters):
 		pending_wt = round(pending_qty * weight_per_unit, 2)
 		item_pending_stock_map[i.item_code] = 0 if i.item_code not in item_pending_stock_map else item_pending_stock_map[i.item_code]
 		current_stock_qty = item_current_stock_map[i.item_code]
+		stock_qty_wt = round(current_stock_qty * weight_per_unit, 2)
 		current_pending_qty = round(i.qty-i.delivered_qty,2) if i.delivered_qty > 0 else i.qty
 
 		if current_stock_qty >= current_pending_qty:
@@ -173,7 +179,7 @@ def ordered_item_report(filters):
 			pending_qty,pending_wt = 0,0,0,0
 	
 
-		data.append([i.name,i.delivery_date,i.customer,i.foreign_buyer_name,i.final_destination,i.p_o_no,i.p_o_date,i.item_code,i.item_name,i.weight_per_unit,item_weight_uom,i.qty,i.delivered_qty,current_pending_qty,pending_wt,current_stock_qty,required_quantity,i.pch_pallet_size])
+		data.append([i.name,i.delivery_date,i.customer,i.foreign_buyer_name,i.final_destination,i.p_o_no,i.p_o_date,i.item_code,i.item_name,i.weight_per_unit,item_weight_uom,i.qty,i.delivered_qty,current_pending_qty,pending_wt,current_stock_qty,stock_qty_wt,required_quantity,i.pch_pallet_size])
 	return data
 
 #section close
@@ -295,7 +301,7 @@ def get_columns():
 	})
 	columns.append({
 		"fieldname": "pending_wt",
-		"label": _("P. Weight"),
+		"label": _("Pending Qty Wt"),
 		"fieldtype": "Float",
 		"width": 75,
 		"precision": 2
@@ -303,6 +309,13 @@ def get_columns():
 	columns.append({
 		"fieldname": "item_stock_qty",
 		"label": _("Stock"),
+		"fieldtype": "Float",
+		"width": 75,
+		"precision": 2
+	})
+	columns.append({
+		"fieldname": "stock_qty_wt",
+		"label": _("Stock Qty Wt   "),
 		"fieldtype": "Float",
 		"width": 75,
 		"precision": 2
