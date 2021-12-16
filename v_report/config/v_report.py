@@ -3,8 +3,9 @@ from frappe import _
 
 def get_data():
 	return [
-			"label": _("Documents"),
-			"icon": "fa fa-star",
+		{
+			"label": _("Key Report"),
+			"icon": "icon-cog",
 			"items": [
 				{
 					"type": "doctype",
@@ -12,11 +13,7 @@ def get_data():
 					"onboard": 1,
 					"dependencies": [],
 					"description": _("Container Planning"),
-				},
-			]
-			"label": _("Key Report"),
-			"icon": "icon-cog",
-			"items": [	
+				},	
 				{
 					"type": "report",
 					"is_query_report": True,
@@ -52,6 +49,7 @@ def get_data():
 					"is_query_report": True,
 					"name": "Ordered Item To Be Manufacture",
 					"doctype": "Sales Order",
-				},			
+				},		
 			]
-		]
+		}
+    ]    
