@@ -3,7 +3,17 @@ from frappe import _
 
 def get_data():
 	return [
-		{
+			"label": _("Documents"),
+			"icon": "fa fa-star",
+			"items": [
+				{
+					"type": "doctype",
+					"name": "Container Planning",
+					"onboard": 1,
+					"dependencies": [],
+					"description": _("Container Planning"),
+				},
+			]
 			"label": _("Key Report"),
 			"icon": "icon-cog",
 			"items": [	
@@ -44,5 +54,4 @@ def get_data():
 					"doctype": "Sales Order",
 				},			
 			]
-		}
-	]
+		]

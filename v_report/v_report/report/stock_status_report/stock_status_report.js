@@ -20,6 +20,13 @@ frappe.query_reports["Stock Status Report"] = {
             "reqd":1
          },
 		 {
+            "fieldname":"warehouse",
+            "label": __("Warehouse"),
+            "fieldtype": "Link",
+            "options": "Warehouse",
+            "reqd":1
+         },
+		 {
 		    "fieldname":"report_type",
 		    "label": __("Report Type"),
 			"fieldtype": "Select",
@@ -42,6 +49,19 @@ frappe.query_reports["Stock Status Report"] = {
 		    "reqd":1
 		}
 
-	]
+	],
+	"formatter": function (value, row, column, data, default_formatter) {
+		value = default_formatter(value, row, column, data);
+
+		if (column.fieldname == "flag" && data && data.flag == 0) {
+			value = "<span style='color:red;background-color:red'>" + value + "</span>";
+		}
+		else if (column.fieldname == "flag" && data && data.flag == 1) {
+			value = "<span style='color:green;background-color:green'>" + value + "</span>";
+		}
+
+		return value;
+	}
+
 
 };
