@@ -249,8 +249,8 @@ def get_sub_items_data(items,ordered_items_map):
 		for j in sub_item:
 			sub_item_map.setdefault(j.item_code, frappe._dict())
 			#sub_item_map[j.item_code]["name"] = j.item_name
-			sub_item_map[j.item_code]["oqty"] = flt(j.qty * ordered_items_map.get(i.item_code, {}).get("oqty"))
-			sub_item_map[j.item_code]["dqty"] = flt(j.qty * ordered_items_map.get(i.item_code, {}).get("dqty"))
+			sub_item_map[j.item_code]["oqty"] = flt(j.qty * ordered_items_map.get(i.item_code, {}).get("oqty")) if (ordered_items_map.get(i.item_code, {}).get("oqty")) and j.qty else 0
+			sub_item_map[j.item_code]["dqty"] = flt(j.qty * ordered_items_map.get(i.item_code, {}).get("dqty")) if (ordered_items_map.get(i.item_code, {}).get("dqty")) and j.qty  else 0
 
 		
 	return sub_item_map
