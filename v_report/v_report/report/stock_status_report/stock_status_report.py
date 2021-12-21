@@ -78,8 +78,8 @@ def mixed_report(filters):
 		sub_items = get_sub_items(i.item_code)
 		for j in sub_items:
 			s_op_stock=get_balance_qty_from_slee(j.item_code,filters.from_date)
-			s_ordered_qty = flt(ordered_qty * j.qty)
-			s_delivered_qty = flt(delivered_qty * j.qty)
+			s_ordered_qty = flt(ordered_qty * j.qty) if j.qty and ordered_qty else 0
+			s_delivered_qty = flt(delivered_qty * j.qty) if j.qty and delivered_qty else 0
 			s_pending_qty = flt(s_ordered_qty - s_delivered_qty)if s_ordered_qty and s_ordered_qty > s_delivered_qty else 0
 			s_closing_stock = get_currents_stock_from_bin(j.item_code)
 			s_remain_qty = flt(s_pending_qty - s_closing_stock) if s_pending_qty else 0
