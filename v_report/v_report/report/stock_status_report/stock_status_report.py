@@ -38,9 +38,9 @@ def ordered_item_report(filters):
 		op_stock=get_balance_qty_from_slee(i.item_code,filters.from_date)
 		ordered_qty = ordered_items_map.get(i.item_code, {}).get("oqty")
 		delivered_qty = ordered_items_map.get(i.item_code, {}).get("dqty")
-		pending_qty = flt(ordered_qty - delivered_qty)
+		pending_qty = flt(ordered_qty - delivered_qty) if ordered_qty and ordered_qty > delivered_qty else 0
 		closing_stock = get_currents_stock_from_bin(i.item_code)
-		remain_qty = flt(pending_qty - closing_stock)
+		remain_qty = flt(pending_qty - closing_stock) if pending_qty else 0
 		data.append([0, i.item_name,op_stock, "production_qty", ordered_qty,delivered_qty, pending_qty, closing_stock, remain_qty])
 
 	return data
@@ -56,9 +56,9 @@ def dispatched_item_report(filters):
 		s_op_stock = get_balance_qty_from_slee(i.item_code,filters.from_date)
 		s_ordered_qty = sub_items_map.get(i.item_code, {}).get("oqty")
 		s_delivered_qty = sub_items_map.get(i.item_code, {}).get("dqty")
-		s_pending_qty = flt(s_ordered_qty - s_delivered_qty)
+		s_pending_qty = flt(s_ordered_qty - s_delivered_qty) if s_ordered_qty and s_ordered_qty > s_delivered_qty else 0
 		s_closing_stock = get_currents_stock_from_bin(i.item_code)
-		s_remain_qty = flt(s_pending_qty - s_closing_stock)
+		s_remain_qty = flt(s_pending_qty - s_closing_stock) if s_pending_qty else 0
 		data.append([1, s_item_name,s_op_stock,"production_qty", s_ordered_qty,s_delivered_qty, s_pending_qty, s_closing_stock, s_remain_qty])
 	
 	return data
@@ -70,19 +70,19 @@ def mixed_report(filters):
 	for i in items:
 		ordered_qty = ordered_items_map.get(i.item_code, {}).get("oqty")
 		delivered_qty = ordered_items_map.get(i.item_code, {}).get("dqty")
-		pending_qty = flt(ordered_qty - delivered_qty)
+		pending_qty = flt(ordered_qty - delivered_qty) if ordered_qty and ordered_qty > delivered_qty else 0
 		closing_stock = get_currents_stock_from_bin(i.item_code)
 		op_stock = get_balance_qty_from_slee(i.item_code,filters.from_date)
-		remain_qty = flt(pending_qty - closing_stock)
+		remain_qty = flt(pending_qty - closing_stock) if pending_qty else 0
 		data.append([0, i.item_name,op_stock, "production_qty", ordered_qty,delivered_qty, pending_qty, closing_stock, remain_qty])
 		sub_items = get_sub_items(i.item_code)
 		for j in sub_items:
 			s_op_stock=get_balance_qty_from_slee(j.item_code,filters.from_date)
 			s_ordered_qty = flt(ordered_qty * j.qty)
 			s_delivered_qty = flt(delivered_qty * j.qty)
-			s_pending_qty = flt(s_ordered_qty - s_delivered_qty)
+			s_pending_qty = flt(s_ordered_qty - s_delivered_qty)if s_ordered_qty and s_ordered_qty > s_delivered_qty else 0
 			s_closing_stock = get_currents_stock_from_bin(j.item_code)
-			s_remain_qty = flt(s_pending_qty - s_closing_stock)
+			s_remain_qty = flt(s_pending_qty - s_closing_stock) if s_pending_qty else 0
 			data.append([1, j.item_name,s_op_stock, "production_qty", s_ordered_qty,s_delivered_qty, s_pending_qty, s_closing_stock, s_remain_qty])
 	
 	return data
