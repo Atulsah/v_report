@@ -1,8 +1,9 @@
 {
  "actions": [],
  "allow_rename": 1,
- "autoname": "naming_series:",
+ "autoname": "VIWL-CP/.{s_o_no}./.##",
  "creation": "2021-12-16 12:58:45.800750",
+ "description": "VIWL-CP/.{s_o_no}./.##",
  "doctype": "DocType",
  "editable_grid": 1,
  "engine": "InnoDB",
@@ -13,6 +14,7 @@
   "naming_series",
   "customer",
   "customer_name",
+  "foreign_buyer",
   "column_break1",
   "company",
   "posting_date",
@@ -46,6 +48,7 @@
   "column_break_37",
   "port_code",
   "shipping_bill_date",
+  "s_o_no",
   "amended_from"
  ],
  "fields": [
@@ -61,6 +64,7 @@
   {
    "fieldname": "title",
    "fieldtype": "Data",
+   "hidden": 1,
    "label": "Title"
   },
   {
@@ -250,15 +254,30 @@
   {
    "fieldname": "column_break_37",
    "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "s_o_no",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Sales Order Number",
+   "options": "Sales Order",
+   "reqd": 1
+  },
+  {
+   "fieldname": "foreign_buyer",
+   "fieldtype": "Link",
+   "label": "Foreign Buyer",
+   "options": "Customer"
   }
  ],
  "index_web_pages_for_search": 1,
  "is_submittable": 1,
  "links": [],
- "modified": "2021-12-16 13:54:34.317075",
+ "modified": "2021-12-20 12:04:35.475977",
  "modified_by": "Administrator",
  "module": "V Report",
  "name": "Container Planning",
+ "name_case": "Title Case",
  "owner": "Administrator",
  "permissions": [
   {

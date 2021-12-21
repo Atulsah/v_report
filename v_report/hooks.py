@@ -2,6 +2,9 @@
 from __future__ import unicode_literals
 from . import __version__ as app_version
 
+import frappe
+from frappe.utils import flt
+
 app_name = "v_report"
 app_title = "V Report"
 app_publisher = "Frappe"
@@ -33,6 +36,9 @@ app_license = "MIT"
 # page_js = {"page" : "public/js/file.js"}
 
 # include js in doctype views
+doctype_js = {
+    "Sales Order" : "public/js/doctype/sales_order.js"
+}
 # doctype_js = {"doctype" : "public/js/doctype.js"}
 # doctype_list_js = {"doctype" : "public/js/doctype_list.js"}
 # doctype_tree_js = {"doctype" : "public/js/doctype_tree.js"}
@@ -143,3 +149,22 @@ app_license = "MIT"
 #
 # auto_cancel_exempted_doctypes = ["Auto Repeat"]
 
+
+doc_events = {
+	"Container Planning": {
+		"before_save": "v_report.v_report.doctype.container_planning.container_planning.update_items"
+	}
+}
+
+
+def update_items(doc,method):
+	frappe.errprint("calculate works")
+	for item in doc.get("items"):
+		if item.planned_qty == 0 or "":
+			item.planned_qty= item.qty
+			item.difference_qty = 0
+		else:
+			item.difference_qty=item.planned_qty - item.qty
+
+	doc.custom_field = "value"
+	return doc
