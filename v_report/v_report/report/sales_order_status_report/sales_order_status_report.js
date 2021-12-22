@@ -50,6 +50,9 @@ frappe.query_reports["Sales Order Status Report"] = {
 		if (column.fieldname == "flag" && data && data.flag == 0) {
 			value = "<span style='color:red;background-color:red'>" + value + "</span>";
 		}
+		else if (data.flag == 0) {
+			value = "<span style='font-weight: bold'>" + value + "</span>";
+		}
 		else if (column.fieldname == "flag" && data && data.flag == 1) {
 			value = "<span style='color:green;background-color:green'>" + value + "</span>";
 		}
