@@ -2,9 +2,6 @@
 from __future__ import unicode_literals
 from . import __version__ as app_version
 
-import frappe
-from frappe.utils import flt
-
 app_name = "v_report"
 app_title = "V Report"
 app_publisher = "Frappe"
@@ -155,16 +152,3 @@ doc_events = {
 		"before_save": "v_report.v_report.doctype.container_planning.container_planning.update_items"
 	}
 }
-
-
-def update_items(doc,method):
-	frappe.errprint("calculate works")
-	for item in doc.get("items"):
-		if item.planned_qty == 0 or "":
-			item.planned_qty= item.qty
-			item.difference_qty = 0
-		else:
-			item.difference_qty=item.planned_qty - item.qty
-
-	doc.custom_field = "value"
-	return doc
