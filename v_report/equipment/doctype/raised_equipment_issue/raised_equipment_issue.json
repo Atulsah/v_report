@@ -1,0 +1,182 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "autoname": "EQ-.####",
+ "creation": "2021-12-25 14:47:45.477218",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "company",
+  "daily_preventive_maintenance_id",
+  "status",
+  "column_break_3",
+  "maintenance_equipment_list_id",
+  "equipment_name",
+  "user_id",
+  "section_break_6",
+  "raised_date",
+  "issue_raised",
+  "remark",
+  "column_break_9",
+  "expected_resolve_date",
+  "step_taken",
+  "column_break_12",
+  "items",
+  "description",
+  "amended_from"
+ ],
+ "fields": [
+  {
+   "fieldname": "daily_preventive_maintenance_id",
+   "fieldtype": "Link",
+   "label": "Daily Preventive Maintenance Id",
+   "options": "Daily Preventive Maintenance",
+   "read_only": 1
+  },
+  {
+   "fieldname": "maintenance_equipment_list_id",
+   "fieldtype": "Link",
+   "hidden": 1,
+   "label": "Maintenance Equipment List Id",
+   "options": "Maintenance Equipment List",
+   "read_only": 1
+  },
+  {
+   "fieldname": "issue_raised",
+   "fieldtype": "Small Text",
+   "label": "Issue Raised",
+   "read_only": 1
+  },
+  {
+   "fieldname": "user_id",
+   "fieldtype": "Data",
+   "label": "User Id"
+  },
+  {
+   "fieldname": "description",
+   "fieldtype": "Text Editor",
+   "label": "Description"
+  },
+  {
+   "fieldname": "raised_date",
+   "fieldtype": "Date",
+   "label": "Issue Raised Date",
+   "read_only": 1
+  },
+  {
+   "fieldname": "expected_resolve_date",
+   "fieldtype": "Date",
+   "label": "Expected Resolve Date"
+  },
+  {
+   "fieldname": "status",
+   "fieldtype": "Select",
+   "label": "Status",
+   "options": "Open\nClose"
+  },
+  {
+   "fieldname": "amended_from",
+   "fieldtype": "Link",
+   "label": "Amended From",
+   "no_copy": 1,
+   "options": "Raised Equipment Issue",
+   "print_hide": 1,
+   "read_only": 1
+  },
+  {
+   "fieldname": "equipment_name",
+   "fieldtype": "Data",
+   "label": "Equipment Name",
+   "read_only": 1
+  },
+  {
+   "fieldname": "company",
+   "fieldtype": "Link",
+   "label": "Company",
+   "options": "Company",
+   "read_only": 1
+  },
+  {
+   "fieldname": "column_break_3",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "section_break_6",
+   "fieldtype": "Section Break"
+  },
+  {
+   "fieldname": "column_break_9",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "step_taken",
+   "fieldtype": "Small Text",
+   "label": "Step Taken"
+  },
+  {
+   "fieldname": "column_break_12",
+   "fieldtype": "Section Break"
+  },
+  {
+   "fieldname": "items",
+   "fieldtype": "Table",
+   "label": "Item Used",
+   "options": "Used Item List"
+  },
+  {
+   "fieldname": "remark",
+   "fieldtype": "Data",
+   "label": "Remark",
+   "read_only": 1
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "is_submittable": 1,
+ "links": [],
+ "modified": "2021-12-28 11:59:44.542839",
+ "modified_by": "Administrator",
+ "module": "Equipment",
+ "name": "Raised Equipment Issue",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  },
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "Maintenance Manager",
+   "share": 1,
+   "write": 1
+  },
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "Maintenance User",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "sort_field": "modified",
+ "sort_order": "DESC"
+}

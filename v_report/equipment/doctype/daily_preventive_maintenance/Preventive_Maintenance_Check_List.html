@@ -1,0 +1,79 @@
+<html>
+    <body>
+        <table style="width: 100%;" border="1" cellpadding="0">
+            <tbody>
+                <tr>
+                    <td width="70%" align="center" valign="baseline">
+                        <p style="font-family: 'Times New Roman', Times, serif; font-size: 20px; text-align: center;"> 
+                        <b>VICTORY IRON WORKS LIMITED </b></p>
+                        <p style="font-family: 'Times New Roman', Times, serif; font-size: 14px; text-align: center;">
+                            P-26, Benaras Road, Salkia, Howrah - 711106
+                        </p>
+                    </td>
+                    <td rowspan = 2 >
+                        DOC. NO - {{doc.document_no}}<br/><br/>
+                        REV. NO - {{doc.review_no}}<br/><br/>
+                        REV. DATE - {{doc.review_date}}<br/><br/>
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        <p style="font-family: 'Times New Roman', Times, serif; font-size: 16px; text-align: center;"> 
+                        <b>DAILY PREVENTIVE MAINTENANCE CHECK-LIST</b></p>
+                    </td>
+                </tr>
+            </tbody>
+        </table>  
+        <table  style="width: 100%;" border="1" cellpadding="2">
+            <tr>
+                <td>
+                    <b> Date : {{doc.date}} </b>
+                </td>
+            </tr>
+        </table>
+        <table  style="width: 100%;" border="1" cellpadding="2">
+            <tbody>
+                <tr>
+                    <th class="text-center">SL.NO</th>
+                    <th class="text-center">NAME OF EQUIPMENTS</th>
+                    <th class="text-center">ANY ABNORMALITIES</th>
+                    <th class="text-center">REMARK</th>
+                </tr>
+                {% ment_items_map = {} %}
+                {% for i in doc.equipments %}
+                    {%  ment_items_map.setdefault(i.name, frappe._dict()) %}
+    		        {%  ment_items_map[i.name]["abnormalities"] = flt(i.abnormalities) %}
+    		        {%  ment_items_map[i.name]["remark"]  = flt(i.remark) %}
+                {% endfor %}
+                {% set tasks = frappe.get_all('Equipment Register', filters={'status': 'Enable'}, fields=['name', 'equipment_name', 'alternate_name'], order_by='name asc') %}
+                {% for task in tasks %}
+                    <tr>
+                        <td style="width: 5%; text-align: left;">{{ loop.index }}</td>
+                        <td style="width: 20%; text-align: left;">{{ task.equipment_name }}</td>
+                        <td style="width: 55%; text-align: left;"> &nbsp; </td>
+                        <td style="width: 20%; text-align: left;"> &nbsp; </td>
+                    </tr>
+                {%- endfor -%}
+        </table>
+        <table  style="width: 100%;" border="0" cellpadding="4">
+            <tbody>
+                <tr>
+                    <td style="width: 50%; text-align: Left;">&nbsp;</td>
+                    <td style="width: 50%; text-align: Left;"><b><u>Signature</u></b></td>
+                </tr>
+                <tr>
+                    <td style="width: 50%; text-align: Left;"><br/>1. Sand Plant Operator - </td>
+                    <td style="width: 50%; text-align: Left;"><br/>_______________________________________</td>
+                </tr>
+                <tr>
+                    <td style="width: 50%; text-align: Left;"><br/>2. Mechanical Maintenance Dept. - </td>
+                    <td style="width: 50%; text-align: Left;"><br/>_______________________________________</td>
+                </tr>
+                <tr>
+                    <td style="width: 50%; text-align: Left;"><br/>3. Electrical Maintenance Dept. - </td>
+                    <td style="width: 50%; text-align: Left;"><br/>_______________________________________</td>
+                </tr>
+            </tbody>
+        </table>
+    </body>
+</html>
