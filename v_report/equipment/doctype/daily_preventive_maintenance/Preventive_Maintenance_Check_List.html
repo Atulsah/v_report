@@ -31,6 +31,7 @@
                 </td>
             </tr>
         </table>
+
         <table  style="width: 100%;" border="1" cellpadding="2">
             <tbody>
                 <tr>
@@ -39,22 +40,32 @@
                     <th class="text-center">ANY ABNORMALITIES</th>
                     <th class="text-center">REMARK</th>
                 </tr>
-                {% ment_items_map = {} %}
-                {% for i in doc.equipments %}
-                    {%  ment_items_map.setdefault(i.name, frappe._dict()) %}
-    		        {%  ment_items_map[i.name]["abnormalities"] = flt(i.abnormalities) %}
-    		        {%  ment_items_map[i.name]["remark"]  = flt(i.remark) %}
-                {% endfor %}
+                {% set equipments = []  %}
                 {% set tasks = frappe.get_all('Equipment Register', filters={'status': 'Enable'}, fields=['name', 'equipment_name', 'alternate_name'], order_by='name asc') %}
-                {% for task in tasks %}
-                    <tr>
-                        <td style="width: 5%; text-align: left;">{{ loop.index }}</td>
-                        <td style="width: 20%; text-align: left;">{{ task.equipment_name }}</td>
-                        <td style="width: 55%; text-align: left;"> &nbsp; </td>
-                        <td style="width: 20%; text-align: left;"> &nbsp; </td>
-                    </tr>
-                {%- endfor -%}
+
+                {% set count = namespace(value=1) %}
+                {% for j in doc.equipments %}
+                    {% set equipments = equipments.append(j.equipment_id) %}
+                        <tr>
+                        <td style="width: 5%; text-align: left;">{{ count.value }}{% set count.value = count.value + 1 %}</td>
+                        <td style="width: 20%; text-align: left;">{{ j.equipment_name }}</td>
+                        <td style="width: 55%; text-align: left;"> {{ j.abnormalities }} </td>
+                        <td style="width: 20%; text-align: left;"> {{ j.remark }} </td>  
+                        </tr>
+                {% endfor %}        
+                {% for i in tasks %}
+                    {% if i.name not in equipments %}
+                        <tr>
+                        <td style="width: 5%; text-align: left;">{{ count.value }}{% set count.value = count.value + 1 %}</td>
+                        <td style="width: 20%; text-align: left;">{{ i.equipment_name }}</td>
+                        <td style="width: 55%; text-align: left;"> OK </td>
+                        <td style="width: 20%; text-align: left;"> OK </td>
+                        </tr>
+                    {% endif %}
+                {% endfor %}
+    
         </table>
+        
         <table  style="width: 100%;" border="0" cellpadding="4">
             <tbody>
                 <tr>
@@ -75,5 +86,4 @@
                 </tr>
             </tbody>
         </table>
-    </body>
 </html>
