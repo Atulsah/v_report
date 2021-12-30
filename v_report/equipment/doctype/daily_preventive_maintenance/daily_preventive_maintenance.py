@@ -18,8 +18,7 @@ class DailyPreventiveMaintenance(Document):
 			se.update({ 
 				"company" : doc.company, 
 				"daily_preventive_maintenance_id" : doc.name,
-				"raised_date" : doc.date, 
-				"status" : "Open", 
+				"raised_date" : doc.date,
 				"maintenance_equipment_list_id" :se_item.name, 
 				"equipment_name": se_item.equipment_name, 
 				"issue_raised" : se_item.abnormalities,
