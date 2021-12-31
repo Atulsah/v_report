@@ -13,7 +13,28 @@ def get_data():
 					"onboard": 1,
 					"dependencies": [],
 					"description": _("Container Planning"),
+				},
+				{
+					"type": "doctype",
+					"name": "Equipment Register",
+					"onboard": 1,
+					"dependencies": [],
+					"description": _("Equipment Register"),
+				},
+                {
+					"type": "doctype",
+					"name": "Daily Preventive Maintenance",
+					"onboard": 1,
+					"dependencies": [],
+					"description": _("Daily Preventive Maintenance"),
 				},	
+                {
+					"type": "doctype",
+					"name": "Raised Equipment Issue",
+					"onboard": 1,
+					"dependencies": [],
+					"description": _("Raised Equipment Issue"),
+				},		
 				{
 					"type": "report",
 					"is_query_report": True,

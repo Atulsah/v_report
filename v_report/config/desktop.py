@@ -9,13 +9,7 @@ def get_data():
 			"color": "grey",
 			"icon": "octicon octicon-file-directory",
 			"type": "module",
-			"label": _("V Report")
+			"label": _("Victory")
 		},
-		{
-			"module_name": "Equipment",
-			"color": "grey",
-			"icon": "octicon octicon-file-directory",
-			"type": "module",
-			"label": _("Equipment")
-		}
+		
 	]
