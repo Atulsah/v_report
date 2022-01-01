@@ -134,7 +134,7 @@
  "index_web_pages_for_search": 1,
  "is_submittable": 1,
  "links": [],
- "modified": "2021-12-30 13:01:19.001803",
+ "modified": "2022-01-01 10:01:40.739820",
  "modified_by": "Administrator",
  "module": "Equipment",
  "name": "Raised Equipment Issue",
@@ -149,6 +149,7 @@
    "read": 1,
    "report": 1,
    "role": "System Manager",
+   "select": 1,
    "share": 1,
    "submit": 1,
    "write": 1
@@ -162,6 +163,7 @@
    "read": 1,
    "report": 1,
    "role": "Maintenance Manager",
+   "select": 1,
    "share": 1,
    "submit": 1,
    "write": 1
@@ -194,5 +196,8 @@
   }
  ],
  "sort_field": "modified",
- "sort_order": "DESC"
+ "sort_order": "DESC",
+ "track_changes": 1,
+ "track_seen": 1,
+ "track_views": 1
 }

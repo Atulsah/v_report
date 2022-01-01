@@ -16,10 +16,10 @@ def get_data():
 				},
 				{
 					"type": "doctype",
-					"name": "Equipment Register",
+					"name": "Equipment List",
 					"onboard": 1,
 					"dependencies": [],
-					"description": _("Equipment Register"),
+					"description": _("Equipment List"),
 				},
                 {
 					"type": "doctype",
