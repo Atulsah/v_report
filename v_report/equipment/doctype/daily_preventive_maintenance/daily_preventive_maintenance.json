@@ -1,5 +1,7 @@
 {
  "actions": [],
+ "allow_events_in_timeline": 1,
+ "allow_import": 1,
  "allow_rename": 1,
  "autoname": "VIWL-DPMC-.YYYY.-.MM.-.###",
  "creation": "2021-12-25 12:35:58.543952",
@@ -23,8 +25,10 @@
   {
    "fieldname": "company",
    "fieldtype": "Link",
+   "in_list_view": 1,
    "label": "Company",
-   "options": "Company"
+   "options": "Company",
+   "reqd": 1
   },
   {
    "fieldname": "document_no",
@@ -34,7 +38,9 @@
   {
    "fieldname": "date",
    "fieldtype": "Date",
-   "label": "Date"
+   "in_list_view": 1,
+   "label": "Date",
+   "reqd": 1
   },
   {
    "fieldname": "column_break_4",
@@ -66,8 +72,9 @@
   },
   {
    "fieldname": "operator",
-   "fieldtype": "Data",
-   "label": "Operator"
+   "fieldtype": "Link",
+   "label": "Operator",
+   "options": "User"
   },
   {
    "fieldname": "amended_from",
@@ -82,7 +89,7 @@
  "index_web_pages_for_search": 1,
  "is_submittable": 1,
  "links": [],
- "modified": "2022-01-01 09:57:59.965283",
+ "modified": "2022-01-01 10:20:17.175012",
  "modified_by": "Administrator",
  "module": "Equipment",
  "name": "Daily Preventive Maintenance",
@@ -146,5 +153,8 @@
   }
  ],
  "sort_field": "modified",
- "sort_order": "DESC"
+ "sort_order": "DESC",
+ "track_changes": 1,
+ "track_seen": 1,
+ "track_views": 1
 }
