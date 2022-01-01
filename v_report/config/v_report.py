@@ -4,7 +4,7 @@ from frappe import _
 def get_data():
 	return [
 		{
-			"label": _("Key Report"),
+			"label": _("Documents"),
 			"icon": "icon-cog",
 			"items": [
 				{
@@ -16,10 +16,10 @@ def get_data():
 				},
 				{
 					"type": "doctype",
-					"name": "Equipment List",
+					"name": "Equipment Register",
 					"onboard": 1,
 					"dependencies": [],
-					"description": _("Equipment List"),
+					"description": _("Equipment Register"),
 				},
                 {
 					"type": "doctype",
@@ -34,7 +34,13 @@ def get_data():
 					"onboard": 1,
 					"dependencies": [],
 					"description": _("Raised Equipment Issue"),
-				},		
+				}	
+			]
+		},
+		{
+			"label": _("Key Report"),
+			"icon": "icon-cog",
+			"items": [
 				{
 					"type": "report",
 					"is_query_report": True,
