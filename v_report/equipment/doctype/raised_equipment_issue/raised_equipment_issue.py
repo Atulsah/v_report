@@ -5,6 +5,9 @@ import frappe
 from frappe.model.document import Document
 
 class RaisedEquipmentIssue(Document):
+	pass
+
+"""
 	
 	def on_submit(self):
 		self.create_stock_entry()
@@ -29,5 +32,5 @@ class RaisedEquipmentIssue(Document):
 			se.insert()
 			se.save()
 
-
+"""
 
