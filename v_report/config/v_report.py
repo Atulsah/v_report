@@ -4,7 +4,7 @@ from frappe import _
 def get_data():
 	return [
 		{
-			"label": _("Documents"),
+			"label": _("Container"),
 			"icon": "icon-cog",
 			"items": [
 				{
@@ -13,7 +13,13 @@ def get_data():
 					"onboard": 1,
 					"dependencies": [],
 					"description": _("Container Planning"),
-				},
+				},	
+			]
+		},
+		{
+			"label": _("Equipment"),
+			"icon": "icon-cog",
+			"items": [
 				{
 					"type": "doctype",
 					"name": "Equipment Register",
