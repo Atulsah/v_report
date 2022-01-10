@@ -138,14 +138,14 @@ def get_dispatched_items(filters):
 	return ordered_items_map	
 
 def get_sub_items(item_code):
+	#return frappe.db.sql("""select bom.item,bom_item.item_code,bom_item.item_name,bom_item.qty,bom_item.uom from `tabBOM Item` bom_item,`tabBOM` bom where bom_item.parent=bom.name and bom.item = %s """,(item_code),as_dict=1)
 	return frappe.db.sql("""
 		select 
-			bom.item,bom_item.item_code,bom_item.item_name,bom_item.qty,bom_item.uom 
-		from 
-			`tabBOM Item` bom_item,`tabBOM` bom 
-		where 
-			bom_item.parent=bom.name and bom.item = %s """,
-			(item_code),as_dict=1)
+			pb.new_item_code,pbi.item_code,pbi.item_name,pbi.qty,pbi.uom 
+	 	from 
+	 		`tabProduct Bundle Item` pbi,`tabProduct Bundle` pb 
+	 	where 
+	 		pbi.parent=pb.name and pb.new_item_code = %s """,(item_code),as_dict=1)
 
 def get_currents_stock_from_bin(item_code):
 	item_stock_qty = frappe.db.sql("""

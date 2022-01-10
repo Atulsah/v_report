@@ -70,7 +70,7 @@ def dispatched_item_report(filters):
 
 
 
-			data.append([1,i.name,i.delivery_date,i.customer,i.foreign_buyer_name,i.final_destination,i.p_o_no,i.p_o_date,j.item_code,j.item_name,sub_item_weight_per_unit,sub_item_weight_uom,sub_item_qty,sub_item_dlvr_qty,sub_item_planned_qty,sub_item_pending_qty,sub_item_pending_weight,sub_item_stock_qty,sub_item_stock_qty_wt,sub_item_required_qty,sub_item_crate_size])	
+			data.append([1,i.name,i.delivery_date,i.customer,i.foreign_buyer_name,i.final_destination,i.p_o_no,i.p_o_date,j.item_code,j.item_name,sub_item_weight_per_unit,sub_item_weight_uom,sub_item_qty,j.uom,sub_item_dlvr_qty,sub_item_planned_qty,sub_item_pending_qty,sub_item_pending_weight,sub_item_stock_qty,sub_item_stock_qty_wt,sub_item_required_qty,sub_item_crate_size])	
 	return data
 
 def complete_report(filters):
@@ -107,7 +107,7 @@ def complete_report(filters):
 
 
 
-		data.append([0,i.name,i.delivery_date,i.customer,i.foreign_buyer_name,i.final_destination,i.p_o_no,i.p_o_date,i.item_code,i.item_name,i.weight_per_unit,item_weight_uom,i.qty,i.delivered_qty,item_planned_qty,current_pending_qty,pending_wt,current_stock_qty,stock_qty_wt,required_quantity,i.pch_pallet_size])
+		data.append([0,i.name,i.delivery_date,i.customer,i.foreign_buyer_name,i.final_destination,i.p_o_no,i.p_o_date,i.item_code,i.item_name,i.weight_per_unit,item_weight_uom,i.qty,i.uom,i.delivered_qty,item_planned_qty,current_pending_qty,pending_wt,current_stock_qty,stock_qty_wt,required_quantity,i.pch_pallet_size])
 	
 		pending_qty = current_pending_qty
 		bom_items = get_sub_items(i.item_code)
@@ -141,7 +141,7 @@ def complete_report(filters):
 
 
 
-			data.append([1,i.name,i.delivery_date,i.customer,i.foreign_buyer_name,i.final_destination,i.p_o_no,i.p_o_date,j.item_code,j.item_name,sub_item_weight_per_unit,sub_item_weight_uom,sub_item_qty,sub_item_dlvr_qty,sub_item_planned_qty,sub_item_pending_qty,sub_item_pending_weight,sub_item_stock_qty,sub_item_stock_qty_wt,sub_item_required_qty,sub_item_crate_size])	
+			data.append([1,i.name,i.delivery_date,i.customer,i.foreign_buyer_name,i.final_destination,i.p_o_no,i.p_o_date,j.item_code,j.item_name,sub_item_weight_per_unit,sub_item_weight_uom,sub_item_qty,j.uom,sub_item_dlvr_qty,sub_item_planned_qty,sub_item_pending_qty,sub_item_pending_weight,sub_item_stock_qty,sub_item_stock_qty_wt,sub_item_required_qty,sub_item_crate_size])	
 		
 		
 	return data
@@ -178,7 +178,7 @@ def ordered_item_report(filters):
 			pending_qty,pending_wt = 0,0,0,0
 	
 
-		data.append([0,i.name,i.delivery_date,i.customer,i.foreign_buyer_name,i.final_destination,i.p_o_no,i.p_o_date,i.item_code,i.item_name,i.weight_per_unit,item_weight_uom,i.qty,i.delivered_qty,item_planned_qty,current_pending_qty,pending_wt,current_stock_qty,stock_qty_wt,required_quantity,i.pch_pallet_size])
+		data.append([0,i.name,i.delivery_date,i.customer,i.foreign_buyer_name,i.final_destination,i.p_o_no,i.p_o_date,i.item_code,i.item_name,i.weight_per_unit,item_weight_uom,i.qty,i.uom,i.delivered_qty,item_planned_qty,current_pending_qty,pending_wt,current_stock_qty,stock_qty_wt,required_quantity,i.pch_pallet_size])
 	return data
 
 #section close
@@ -208,7 +208,14 @@ def get_ordered_items(filters):
 			'company':filters.company,'item_group': filters.item_group},as_dict=1) 
 
 def get_sub_items(item_code):
-	return frappe.db.sql("""select bom.item,bom_item.item_code,bom_item.item_name,bom_item.qty,bom_item.uom from `tabBOM Item` bom_item,`tabBOM` bom where bom_item.parent=bom.name and bom.item = %s """,(item_code),as_dict=1)
+	#return frappe.db.sql("""select bom.item,bom_item.item_code,bom_item.item_name,bom_item.qty,bom_item.uom from `tabBOM Item` bom_item,`tabBOM` bom where bom_item.parent=bom.name and bom.item = %s """,(item_code),as_dict=1)
+	return frappe.db.sql("""
+		select 
+			pb.new_item_code,pbi.item_code,pbi.item_name,pbi.qty,pbi.uom 
+	 	from 
+	 		`tabProduct Bundle Item` pbi,`tabProduct Bundle` pb 
+	 	where 
+	 		pbi.parent=pb.name and pb.new_item_code = %s """,(item_code),as_dict=1)
 
 def get_current_stock_from_bin(item_code):
 	item_stock_qty = frappe.db.sql("""select ifnull(actual_qty,0) as actual_qty from `tabBin` where item_code = %s order by creation Desc limit 1""",(item_code),as_dict=1)
@@ -301,8 +308,8 @@ def get_columns():
 		"precision": 2
 	})
 	columns.append({
-		"fieldname": "uom",
-		"label": _("UOM"),
+		"fieldname": "weight_uom",
+		"label": _("Weight UOM"),
 		"fieldtype": "Data",
 		"width": 75,
 		"precision": 2
@@ -311,6 +318,13 @@ def get_columns():
 		"fieldname": "order_qty",
 		"label": _("P.O Qty"),
 		"fieldtype": "Float",
+		"width": 75,
+		"precision": 2
+	})
+	columns.append({
+		"fieldname": "uom",
+		"label": _("UOM"),
+		"fieldtype": "Data",
 		"width": 75,
 		"precision": 2
 	})	
