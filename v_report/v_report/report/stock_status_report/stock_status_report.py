@@ -58,7 +58,7 @@ def dispatched_item_report(filters):
 		s_ordered_qty = sub_items_map.get(i.item_code, {}).get("oqty")
 		s_delivered_qty = sub_items_map.get(i.item_code, {}).get("dqty")
 		s_qty = sub_items_map.get(i.item_code, {}).get("qty")
-		s_uom = sub_items_map.get(i.item_code, {}).get("uom")
+		s_uom = sub_items_map.get(i.item_code, {}).get("uom") or i.stock_uom
 		s_pending_qty = flt(s_ordered_qty - s_delivered_qty) if s_ordered_qty and s_ordered_qty > s_delivered_qty else 0
 		s_closing_stock = get_currents_stock_from_bin(i.item_code)
 		s_remain_qty = flt(s_pending_qty - s_closing_stock) if s_pending_qty else 0
@@ -73,7 +73,7 @@ def mixed_report(filters):
 	for i in items:
 		ordered_qty = ordered_items_map.get(i.item_code, {}).get("oqty")
 		delivered_qty = ordered_items_map.get(i.item_code, {}).get("dqty")
-		uom = ordered_items_map.get(i.item_code, {}).get("uom")
+		uom = ordered_items_map.get(i.item_code,{}).get("uom") or i.stock_uom
 		pending_qty = flt(ordered_qty - delivered_qty) if ordered_qty and ordered_qty > delivered_qty else 0
 		closing_stock = get_currents_stock_from_bin(i.item_code)
 		op_stock = get_balance_qty_from_slee(i.item_code,filters.from_date)
@@ -294,7 +294,7 @@ def get_sub_items_data(items,ordered_items_map):
 def get_sub_itemss(filters):
 		return frappe.db.sql("""
 			select 
-				item.item_code, item.item_name
+				item.item_code, item.item_name, item.stock_uom
 			from 
 				`tabItem` item 
 			where 
