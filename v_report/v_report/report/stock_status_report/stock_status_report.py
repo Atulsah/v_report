@@ -38,10 +38,11 @@ def ordered_item_report(filters):
 		op_stock=get_balance_qty_from_slee(i.item_code,filters.from_date)
 		ordered_qty = ordered_items_map.get(i.item_code, {}).get("oqty")
 		delivered_qty = ordered_items_map.get(i.item_code, {}).get("dqty")
+		uom = ordered_items_map.get(i.item_code).get("uom")
 		pending_qty = flt(ordered_qty - delivered_qty) if ordered_qty and ordered_qty > delivered_qty else 0
 		closing_stock = get_currents_stock_from_bin(i.item_code)
 		remain_qty = flt(pending_qty - closing_stock) if pending_qty else 0
-		data.append([0,i.item_code, i.item_name, 1 , i.uom, op_stock, "production_qty", ordered_qty,delivered_qty, pending_qty, closing_stock, remain_qty])
+		data.append([0,i.item_code, i.item_name, 1, uom, op_stock, "production_qty", ordered_qty,delivered_qty, pending_qty, closing_stock, remain_qty])
 
 	return data
 
@@ -56,10 +57,12 @@ def dispatched_item_report(filters):
 		s_op_stock = get_balance_qty_from_slee(i.item_code,filters.from_date)
 		s_ordered_qty = sub_items_map.get(i.item_code, {}).get("oqty")
 		s_delivered_qty = sub_items_map.get(i.item_code, {}).get("dqty")
+		s_qty = sub_items_map.get(i.item_code, {}).get("qty")
+		s_uom = sub_items_map.get(i.item_code, {}).get("uom")
 		s_pending_qty = flt(s_ordered_qty - s_delivered_qty) if s_ordered_qty and s_ordered_qty > s_delivered_qty else 0
 		s_closing_stock = get_currents_stock_from_bin(i.item_code)
 		s_remain_qty = flt(s_pending_qty - s_closing_stock) if s_pending_qty else 0
-		data.append([1, i.item_code, s_item_name, i.qty, i.uom, s_op_stock,"production_qty", s_ordered_qty,s_delivered_qty, s_pending_qty, s_closing_stock, s_remain_qty])
+		data.append([1, i.item_code, s_item_name, s_qty, s_uom, s_op_stock,"production_qty", s_ordered_qty,s_delivered_qty, s_pending_qty, s_closing_stock, s_remain_qty])
 	
 	return data
 
@@ -70,11 +73,12 @@ def mixed_report(filters):
 	for i in items:
 		ordered_qty = ordered_items_map.get(i.item_code, {}).get("oqty")
 		delivered_qty = ordered_items_map.get(i.item_code, {}).get("dqty")
+		uom = ordered_items_map.get(i.item_code).get("uom")
 		pending_qty = flt(ordered_qty - delivered_qty) if ordered_qty and ordered_qty > delivered_qty else 0
 		closing_stock = get_currents_stock_from_bin(i.item_code)
 		op_stock = get_balance_qty_from_slee(i.item_code,filters.from_date)
 		remain_qty = flt(pending_qty - closing_stock) if pending_qty else 0
-		data.append([0,i.item_code, i.item_name, 1, i.uom, op_stock, "production_qty", ordered_qty,delivered_qty, pending_qty, closing_stock, remain_qty])
+		data.append([0,i.item_code, i.item_name, 1, uom, op_stock, "production_qty", ordered_qty,delivered_qty, pending_qty, closing_stock, remain_qty])
 		sub_items = get_sub_items(i.item_code)
 		for j in sub_items:
 			s_op_stock=get_balance_qty_from_slee(j.item_code,filters.from_date)
@@ -119,7 +123,7 @@ def get_ordered_items(filters):
 		ordered_items_map.setdefault(d.item_code, frappe._dict())
 		ordered_items_map[d.item_code]["oqty"] = flt(d.ordered_qty)
 		ordered_items_map[d.item_code]["dqty"]  = flt(d.delivered_qty)
-
+		ordered_items_map[d.item_code]["uom"]  = d.uom
 	return ordered_items_map	
 
 def get_dispatched_items(filters):
@@ -152,7 +156,7 @@ def get_sub_items(item_code):
 		select 
 			pb.new_item_code,
 			pbi.item_code as item_code,pbi.item_name as item_name,
-			pbi.qty as qty,pbi.uom as uom
+			pbi.qty as qty, pbi.uom as uom
 	 	from 
 			`tabProduct Bundle Item` pbi,`tabProduct Bundle` pb 
 		where 
@@ -197,54 +201,54 @@ def get_columns():
 		"fieldname": "qty",
 		"label": _("Quantity"),
 		"fieldtype": "data",
-		"width": 50
+		"width": 100
 	})
 	columns.append({
 		"fieldname": "uom",
 		"label": _("UOM"),
-		"fieldtype": "Data",
-		"width": 120
+		"fieldtype": "data",
+		"width": 100
 	})
 	columns.append({
 		"fieldname": "opening_stock",
 		"label": _("Opening Stock"),
-		"fieldtype": "Data",
+		"fieldtype": "data",
 		"width": 120
 	})
 	columns.append({
 		"fieldname": "production_qty",
 		"label": _("Production Qty"),
-		"fieldtype": "Data",
+		"fieldtype": "data",
 		"width": 120
 	})
 	columns.append({
 		"fieldname": "order_received",
 		"label": _("Order Received"),
-		"fieldtype": "Data",
+		"fieldtype": "data",
 		"width": 120
 	})
 	columns.append({
 		"fieldname": "dispatched_qty",
 		"label": _("Dispatched Qty"),
-		"fieldtype": "Data",
-		"width": 120
+		"fieldtype": "data",
+		"width": 150
 	})
 	columns.append({
 		"fieldname": "pending_qty",
 		"label": _("Pending Qty"),
-		"fieldtype": "Data",
+		"fieldtype": "data",
 		"width": 120
 	})
 	columns.append({
 		"fieldname": "closing_stock",
 		"label": _("Closing Stock"),
-		"fieldtype": "Data",
+		"fieldtype": "data",
 		"width": 120
 	})
 	columns.append({
-		"fieldname": "Product Remains",
-		"label": _("product_remains"),
-		"fieldtype": "Data",
+		"fieldname": "product_remains",
+		"label": _("Product Remains"),
+		"fieldtype": "data",
 		"width": 120
 	})
 
