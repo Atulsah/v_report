@@ -20,14 +20,52 @@ def execute(filters):
 
 	elif filters.report_type == "Dispatched-Item-Report":
 		data = []
-		data = dispatched_item_report(filters)
-
+		data = dispatched_item_revised_report(filters)
+	
+	elif filters.report_type == "Order-Item-Report":
+		data = []
+		data = ordered_item_report(filters)
 	else:
 		data = [] 
 		data = ordered_item_report(filters)
 
-	
+		
 	return columns, data
+
+def ordered_item_revised_report(filters):
+	data = []
+	items = get_ordered_items(filters)
+	item_pending_stock_map = {}
+	item_current_stock_map = {}
+	for i in items:
+		weight_per_unit = frappe.db.get_value("Item", {'name': i.item_code}, "weight_per_unit")
+		item_weight_uom = frappe.db.get_value("Item", {'name': i.item_code}, "weight_uom")
+		item_current_stock_map[i.item_code] = get_current_stock_from_bin(i.item_code, filters.warehouse) if i.item_code not in item_current_stock_map else item_current_stock_map[i.item_code]
+		item_planned_qty = get_planned_qty(i.item_code, i.name)
+		item_pending_stock_map[i.item_code] = 0 if i.item_code not in item_pending_stock_map else item_pending_stock_map[i.item_code]
+		current_stock_qty = item_current_stock_map[i.item_code]
+		stock_qty_wt = round(current_stock_qty * weight_per_unit, 2) if (current_stock_qty * weight_per_unit) > 0 else 0
+		current_pending_qty = round(i.qty - (i.delivered_qty + item_planned_qty),2) if (i.delivered_qty + item_planned_qty) > 0 else i.qty
+		pending_wt = round(current_pending_qty * weight_per_unit, 2)
+
+		if current_stock_qty >= current_pending_qty:
+			current_stock_qty = 0 if current_stock_qty <=current_pending_qty else current_stock_qty
+			required_quantity = 0 if (current_pending_qty <= item_current_stock_map[i.item_code]) else item_pending_stock_map[i.item_code]+current_pending_qty
+			item_current_stock_map[i.item_code]= item_current_stock_map[i.item_code] - current_pending_qty
+			item_pending_stock_map[i.item_code]= item_pending_stock_map[i.item_code] + current_pending_qty
+		else:
+			current_stock_qty = 0 if current_stock_qty <=0 else current_stock_qty
+			item_pending_stock_map[i.item_code]= item_pending_stock_map[i.item_code] + (current_pending_qty if current_stock_qty <= 0 else (current_pending_qty - current_stock_qty))
+			required_quantity = 0 if (current_pending_qty < item_current_stock_map[i.item_code]) else item_pending_stock_map[i.item_code]
+			item_current_stock_map[i.item_code]= item_current_stock_map[i.item_code] - current_pending_qty
+
+
+		if i.delivered_qty > i.qty:
+			pending_qty,pending_wt = 0,0,0,0
+	
+
+		data.append([0,i.name,i.delivery_date,i.foreign_buyer_name,i.final_destination,i.po_no,i.po_date,i.item_code,i.item_name,i.weight_per_unit,item_weight_uom,i.qty,i.uom,i.delivered_qty,item_planned_qty,current_pending_qty,pending_wt,current_stock_qty,stock_qty_wt,required_quantity,i.pch_pallet_size])
+	return data
 
 def dispatched_item_report(filters):
 	data = []
@@ -70,7 +108,7 @@ def dispatched_item_report(filters):
 
 
 
-			data.append([1,i.name,i.delivery_date,i.customer,i.foreign_buyer_name,i.final_destination,i.p_o_no,i.p_o_date,j.item_code,j.item_name,sub_item_weight_per_unit,sub_item_weight_uom,sub_item_qty,j.uom,sub_item_dlvr_qty,sub_item_planned_qty,sub_item_pending_qty,sub_item_pending_weight,sub_item_stock_qty,sub_item_stock_qty_wt,sub_item_required_qty,sub_item_crate_size])	
+			data.append([1,i.name,i.delivery_date,i.foreign_buyer_name,i.final_destination,i.po_no,i.po_date,j.item_code,j.item_name,sub_item_weight_per_unit,sub_item_weight_uom,sub_item_qty,j.uom,sub_item_dlvr_qty,sub_item_planned_qty,sub_item_pending_qty,sub_item_pending_weight,sub_item_stock_qty,sub_item_stock_qty_wt,sub_item_required_qty,sub_item_crate_size])	
 	return data
 
 def complete_report(filters):
@@ -107,7 +145,7 @@ def complete_report(filters):
 
 
 
-		data.append([0,i.name,i.delivery_date,i.customer,i.foreign_buyer_name,i.final_destination,i.p_o_no,i.p_o_date,i.item_code,i.item_name,i.weight_per_unit,item_weight_uom,i.qty,i.uom,i.delivered_qty,item_planned_qty,current_pending_qty,pending_wt,current_stock_qty,stock_qty_wt,required_quantity,i.pch_pallet_size])
+		data.append([0,i.name,i.delivery_date,i.foreign_buyer_name,i.final_destination,i.po_no,i.po_date,i.item_code,i.item_name,i.weight_per_unit,item_weight_uom,i.qty,i.uom,i.delivered_qty,item_planned_qty,current_pending_qty,pending_wt,current_stock_qty,stock_qty_wt,required_quantity,i.pch_pallet_size])
 	
 		pending_qty = current_pending_qty
 		bom_items = get_sub_items(i.item_code)
@@ -141,7 +179,7 @@ def complete_report(filters):
 
 
 
-			data.append([1,i.name,i.delivery_date,i.customer,i.foreign_buyer_name,i.final_destination,i.p_o_no,i.p_o_date,j.item_code,j.item_name,sub_item_weight_per_unit,sub_item_weight_uom,sub_item_qty,j.uom,sub_item_dlvr_qty,sub_item_planned_qty,sub_item_pending_qty,sub_item_pending_weight,sub_item_stock_qty,sub_item_stock_qty_wt,sub_item_required_qty,sub_item_crate_size])	
+			data.append([1,i.name,i.delivery_date,i.foreign_buyer_name,i.final_destination,i.po_no,i.po_date,j.item_code,j.item_name,sub_item_weight_per_unit,sub_item_weight_uom,sub_item_qty,j.uom,sub_item_dlvr_qty,sub_item_planned_qty,sub_item_pending_qty,sub_item_pending_weight,sub_item_stock_qty,sub_item_stock_qty_wt,sub_item_required_qty,sub_item_crate_size])	
 		
 		
 	return data
@@ -175,10 +213,10 @@ def ordered_item_report(filters):
 
 
 		if i.delivered_qty > i.qty:
-			pending_qty,pending_wt = 0,0,0,0
+			pending_qty,pending_wt = 0,0
 	
 
-		data.append([0,i.name,i.delivery_date,i.customer,i.foreign_buyer_name,i.final_destination,i.p_o_no,i.p_o_date,i.item_code,i.item_name,i.weight_per_unit,item_weight_uom,i.qty,i.uom,i.delivered_qty,item_planned_qty,current_pending_qty,pending_wt,current_stock_qty,stock_qty_wt,required_quantity,i.pch_pallet_size])
+		data.append([0,i.name,i.delivery_date,i.foreign_buyer_name,i.final_destination,i.po_no,i.po_date,i.item_code,i.item_name,i.weight_per_unit,item_weight_uom,i.qty,i.uom,i.delivered_qty,item_planned_qty,current_pending_qty,pending_wt,current_stock_qty,stock_qty_wt,required_quantity,i.pch_pallet_size])
 	return data
 
 #section close
@@ -193,19 +231,25 @@ def get_item_conditions(filters):
 def get_ordered_items(filters):
 	return frappe.db.sql("""
 		select 
-			so.customer,so.foreign_buyer_name,so.final_destination,
-			so_item.p_o_no,so_item.p_o_date,so.name,so_item.item_code,so_item.item_name,
-			so_item.uom,so_item.qty,so_item.delivered_qty,so_item.delivery_date,
-			so_item.weight_per_unit,so_item.pch_pallet_size
+			so.name,so.po_no,so.po_date,so.delivery_date,
+			so.foreign_buyer_name,so.final_destination,
+			so_item.item_code,so_item.item_name,
+			so_item.qty,so_item.uom,so_item.delivered_qty,
+			so_item.weight_per_unit,so_item.weight_uom,
+			so_item.pch_pallet_size
 		from 
 			`tabSales Order Item` so_item,`tabSales Order` so
 		where 
 			so.transaction_date BETWEEN %(from_date)s and %(to_date)s and 
-			so.company=%(company)s and so_item.parent=so.name and 
-			so_item.pch_pallet_size >=1 and so.docstatus=1 
-			{itm_conditions} order by so.delivery_date Asc """.format(itm_conditions=get_item_conditions(filters)),
+			so.company=%(company)s and 
+			so.foreign_buyer_name=%(foreign_buyer_name)s and
+			so_item.parent=so.name and 
+			so.docstatus=1 
+			{itm_conditions} 
+		order by 
+			so.delivery_date Desc """.format(itm_conditions=get_item_conditions(filters)),
 			{'from_date':filters.from_date,'to_date':filters.to_date,
-			'company':filters.company,'item_group': filters.item_group},as_dict=1) 
+			'company':filters.company,'foreign_buyer_name':filters.foreign_buyer_name,'item_group': filters.item_group},as_dict=1) 
 
 def get_sub_items(item_code):
 	#return frappe.db.sql("""select bom.item,bom_item.item_code,bom_item.item_name,bom_item.qty,bom_item.uom from `tabBOM Item` bom_item,`tabBOM` bom where bom_item.parent=bom.name and bom.item = %s """,(item_code),as_dict=1)
@@ -217,8 +261,16 @@ def get_sub_items(item_code):
 	 	where 
 	 		pbi.parent=pb.name and pb.new_item_code = %s """,(item_code),as_dict=1)
 
-def get_current_stock_from_bin(item_code):
-	item_stock_qty = frappe.db.sql("""select ifnull(actual_qty,0) as actual_qty from `tabBin` where item_code = %s order by creation Desc limit 1""",(item_code),as_dict=1)
+def get_current_stock_from_bin(item_code, warehouse):
+	item_stock_qty = frappe.db.sql("""
+		select 
+			ifnull(actual_qty,0) as actual_qty 
+		from 
+			`tabBin` 
+		where 
+			warehouse = %s and item_code = %s 
+		order by 
+			creation Desc limit 1""",(warehouse, item_code),as_dict=1)
 	if item_stock_qty and item_stock_qty[0].actual_qty > 0:
 		return item_stock_qty[0].actual_qty
 	else:
@@ -248,26 +300,19 @@ def get_columns():
 		"label": _("Sales Order"),
 		"fieldtype": "Link",
 		"options": "Sales Order",
-		"width": 75
+		"width": 150
 	})
 	columns.append({
 		"fieldname": "delivery_date",
 		"label": _("Delivery Date"),
 		"fieldtype": "Date",
-		"width": 75,
-	})
-	columns.append({
-		"fieldname": "customer",
-		"label": _("Customer"),  
-		"fieldtype": "Link",
-		"options": "Customer",
-		"width": 150
+		"width": 100,
 	})
 	columns.append({
 		"fieldname": "foreign_buyer_name",
 		"label": _("Buyer"),
 		"fieldtype": "Data",
-		"width": 75
+		"width": 100
 	})
 	columns.append({
 		"fieldname": "final_destination",
@@ -276,16 +321,16 @@ def get_columns():
 		"width": 75
 	})
 	columns.append({
-		"fieldname": "p_o_no",
+		"fieldname": "po_no",
 		"label": _("PO No"),
 		"fieldtype": "Data",
 		"width": 60
 	})
 	columns.append({
-		"fieldname": "p_o_date",
+		"fieldname": "po_date",
 		"label": _("Date"),
 		"fieldtype": "Date",
-		"width": 60
+		"width": 100
 	})
 	columns.append({
 		"fieldname": "item_code",
@@ -385,3 +430,68 @@ def get_columns():
 		"precision": 2
 	})
 	return columns	
+
+def dispatched_item_revised_report(filters):
+	data = []
+	items = get_ordered_items(filters)
+	print(items)
+	sub_item_stock_map = {}
+	sub_item_pending_map = {}
+
+	for i in items:
+		sub_items = get_dispatcheded_items(i.name, i.item_code)
+		item_planned_qty = get_planned_qty(i.item_code, i.name)
+		pending = round((i.qty - (i.delivered_qty + item_planned_qty)),2)
+		pending_wt = round((pending + i.weight_per_unit),2)
+		if sub_items:
+			for j in sub_items:
+				if i.item_code == j.parent_item:
+					item_unit_wt = frappe.db.get_value("Item", {'name': j.item_code}, "weight_per_unit")
+					item_uom = frappe.db.get_value("Item", {'name': j.item_code}, "weight_uom")
+					dlvr = round(i.delivered_qty*(j.qty/i.qty),2)
+					planed = round(item_planned_qty*(j.qty/i.qty),2)
+					pending = round(j.qty - ((i.delivered_qty*(j.qty/i.qty)+(item_planned_qty*(j.qty/i.qty))))) if(dlvr + planed) > 0 else j.qty
+					pending_wt = round((pending * item_unit_wt),2)
+					sub_item_stock_map[j.item_code] = get_current_stock_from_bin(j.item_code, filters.warehouse) if j.item_code not in sub_item_stock_map else sub_item_stock_map[j.item_code]
+					sub_item_pending_map[j.item_code] = 0 if j.item_code not in sub_item_pending_map else sub_item_pending_map[j.item_code]
+					sub_item_stock_qty = sub_item_stock_map[j.item_code]
+					sub_item_stock_qty_wt = 0 if sub_item_stock_qty<=0 else round(sub_item_stock_qty * item_unit_wt, 2)
+
+					if sub_item_stock_qty >= pending:
+						sub_item_stock_qty = 0 if sub_item_stock_qty <=pending else sub_item_stock_qty
+						sub_item_required_qty = (pending - sub_item_stock_map[j.item_code]) if (pending <= sub_item_stock_map[j.item_code]) else sub_item_pending_map[j.item_code]+pending
+						sub_item_stock_map[j.item_code]= sub_item_stock_map[j.item_code] - pending
+						sub_item_pending_map[j.item_code]= sub_item_pending_map[j.item_code] + pending
+					else:
+						sub_item_stock_qty = 0 if sub_item_stock_qty <=0 else sub_item_stock_qty
+						sub_item_pending_map[j.item_code]= sub_item_pending_map[j.item_code] + (pending if sub_item_stock_qty <= 0 else (pending - sub_item_stock_qty))
+						sub_item_required_qty = (pending - sub_item_stock_map[j.item_code]) if (pending < sub_item_stock_map[j.item_code]) else sub_item_pending_map[j.item_code]
+						sub_item_stock_map[j.item_code]= sub_item_stock_map[j.item_code] - pending
+						pallet_size = round(i.pch_pallet_size * (j.qty/i.qty),2)
+
+
+					data.append([1,i.name,i.delivery_date,i.foreign_buyer_name,
+						i.final_destination,i.po_no,i.po_date,j.item_code,j.item_name,
+						item_unit_wt,item_uom,j.qty,j.uom,dlvr,planed,pending,pending_wt,
+						sub_item_stock_qty,sub_item_stock_qty_wt,sub_item_required_qty,
+						pallet_size])
+						
+		else:
+			data.append([1,i.name,i.delivery_date,i.foreign_buyer_name,
+				i.final_destination,i.po_no,i.po_date,i.item_code,i.item_name,
+				i.weight_per_unit,i.weight_uom,i.qty,
+				i.uom,i.delivered_qty,item_planned_qty,pending,pending_wt,			
+				" "," ",
+				" ",i.pch_pallet_size])
+
+	return data
+
+
+def get_dispatcheded_items(name, item_code):
+	return frappe.db.sql("""
+		select 
+			parent_item, item_code, item_name, qty, uom as pk_item_uom
+		from 
+			`tabPacked Item` pk_item
+		where 
+			pk_item.parent= %s and pk_item.parent_item=%s""",(name, item_code),as_dict=1)
