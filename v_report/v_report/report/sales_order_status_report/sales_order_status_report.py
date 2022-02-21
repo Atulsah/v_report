@@ -59,7 +59,7 @@ def get_ordered_items(filters):
 			so.docstatus=1 
 			{itm_conditions} 
 		order by 
-			so.delivery_date Desc """.format(itm_conditions=get_item_conditions(filters)),
+			so.delivery_date Asc """.format(itm_conditions=get_item_conditions(filters)),
 			{'from_date':filters.from_date,'to_date':filters.to_date,
 			'company':filters.company,'foreign_buyer_name':filters.foreign_buyer_name,'item_group': filters.item_group},as_dict=1) 
 
