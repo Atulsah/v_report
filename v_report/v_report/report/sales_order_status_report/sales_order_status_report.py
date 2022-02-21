@@ -66,7 +66,7 @@ def get_ordered_items(filters):
 def get_dispatcheded_items(name, item_code):
 	return frappe.db.sql("""
 		select 
-			parent_item, item_code, item_name, qty, uom as pk_item_uom
+			pk_item.parent_item, pk_item.item_code, pk_item.item_name, pk_item.qty, pk_item.uom
 		from 
 			`tabPacked Item` pk_item
 		where 
