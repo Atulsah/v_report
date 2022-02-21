@@ -41,7 +41,7 @@ frappe.query_reports["Sales Order Status Report"] = {
 		    "fieldname":"report_type",
 		    "label": __("Report Type"),
 			"fieldtype": "Select",
-			"options": ["Order-Item-Report","Dispatched-Item-Report","Complete-Report", "Ordered-item-revised-report"],
+			"options": ["Order Item Report","Dispatched Item Report","Complete Report"],
 			"default": "Order-Item-Report",
 		},
 		{
