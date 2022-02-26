@@ -12,13 +12,15 @@ frappe.query_reports["Stock Status Report"] = {
             "default": frappe.defaults.get_user_default("Company"),
             "reqd":1
          },
+
 		 {
-            "fieldname":"foreign_buyer",
-            "label": __("Customer"),
+            "fieldname":"foreign_buyer_name",
+            "label": __("Foreign Buyer Name"),
             "fieldtype": "Link",
             "options": "Customer",
             "reqd":1
          },
+
 		 {
             "fieldname":"warehouse",
             "label": __("Warehouse"),
@@ -26,16 +28,25 @@ frappe.query_reports["Stock Status Report"] = {
             "options": "Warehouse",
             "reqd":1
          },
+
+		 {
+            "fieldname":"item_group",
+            "label": __("Item Group"),
+            "fieldtype": "Link",
+            "options": "Item Group",
+            "reqd":0
+         },
+		 
 		 {
 		    "fieldname":"report_type",
 		    "label": __("Report Type"),
 			"fieldtype": "Select",
-			"options": ["Ordered-Item-Report","Dispatched-Item-Report","Mixed-Report"],
-			"default": "Ordered-Item-Report",
+			"options": ["Dispatched Item Report","Set Item Report"],
+			"default": "Dispatched Item Report",
 		},
 		{
 		    "fieldname":"from_date",
-		    "label": __("Sold Date From"),
+		    "label": __("From Date"),
 		    "fieldtype": "Date",
 		    "default": frappe.defaults.get_user_default("year_start_date"),
 		    "reqd":1
@@ -43,14 +54,13 @@ frappe.query_reports["Stock Status Report"] = {
 
 		{
 		    "fieldname":"to_date",
-		    "label": __("Sold Date To"),
+		    "label": __("To Date"),
 		    "fieldtype": "Date",
 		    "default": frappe.defaults.get_user_default("year_end_date"),
 		    "reqd":1
 		}
 
 	],
-
 	"formatter": function (value, row, column, data, default_formatter) {
 		value = default_formatter(value, row, column, data);
 
@@ -66,6 +76,5 @@ frappe.query_reports["Stock Status Report"] = {
 
 		return value;
 	}
-
-
 };
+

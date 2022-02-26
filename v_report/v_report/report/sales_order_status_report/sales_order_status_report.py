@@ -308,9 +308,9 @@ def dispatched_item_report(filters):
 						item_pending_map[j.item_code]= item_pending_map[j.item_code] + (pending if sub_item_stock_qty <= 0 else (pending - sub_item_stock_qty))
 						sub_item_required_qty = (pending - item_stock_map[j.item_code]) if (pending < item_stock_map[j.item_code]) else item_pending_map[j.item_code]
 						item_stock_map[j.item_code]= item_stock_map[j.item_code] - pending
-						pallet_size = round(i.pch_pallet_size * (j.qty/i.qty),2)
+						
 
-
+					pallet_size = round(i.pch_pallet_size * (j.qty/i.qty),2)
 					data.append([1,i.name,i.delivery_date,i.foreign_buyer_name,
 						i.final_destination,i.po_no,i.po_date,j.item_code,j.item_name,
 						item_unit_wt,item_uom,j.qty,j.uom,dlvr,planed,pending,pending_wt,
@@ -402,9 +402,9 @@ def complete_report(filters):
 						sub_item_pending_map[j.item_code]= sub_item_pending_map[j.item_code] + (pending if sub_item_stock_qty <= 0 else (pending - sub_item_stock_qty))
 						sub_item_required_qty = (pending - sub_item_stock_map[j.item_code]) if (pending < sub_item_stock_map[j.item_code]) else sub_item_pending_map[j.item_code]
 						sub_item_stock_map[j.item_code]= sub_item_stock_map[j.item_code] - pending
-						pallet_size = round(i.pch_pallet_size * (j.qty/i.qty),2)
+						
 
-
+					pallet_size = round(i.pch_pallet_size * (j.qty/i.qty),2)
 					data.append([1,i.name,i.delivery_date,i.foreign_buyer_name,
 						i.final_destination,i.po_no,i.po_date,j.item_code,j.item_name,
 						item_unit_wt,item_uom,j.qty,j.uom,dlvr,planed,pending,pending_wt,
