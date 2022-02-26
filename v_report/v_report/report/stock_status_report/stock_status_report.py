@@ -31,8 +31,7 @@ def execute(filters):
 
 def dispatched_item_report(filters):
 	data = []
-	items = get_item_list(filters)
-	print(items[1])
+	items = get_items(filters)
 	#sub_items = get_sub_itemss(filters)
 	#ordered_items_map = get_ordered_items(filters)	
 	#sub_items_map = get_sub_items_data(items,ordered_items_map)
@@ -84,7 +83,7 @@ def get_item_conditions(filters):
 
 	return "and {}".format(" and ".join(conditions)) if conditions else ""
 
-def get_item_list(filters):
+def get_items(filters):
 	return frappe.db.sql("""
 		select 
 			item.item_code, item.item_name, item.stock_uom
