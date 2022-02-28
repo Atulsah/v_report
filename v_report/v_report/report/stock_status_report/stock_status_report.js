@@ -41,8 +41,8 @@ frappe.query_reports["Stock Status Report"] = {
 		    "fieldname":"report_type",
 		    "label": __("Report Type"),
 			"fieldtype": "Select",
-			"options": ["Dispatched Item Report","Set Item Report"],
-			"default": "Dispatched Item Report",
+			"options": ["Dispatch Item Report","Set Item Report"],
+			"default": "Dispatch Item Report",
 		},
 		{
 		    "fieldname":"from_date",

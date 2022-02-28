@@ -32,7 +32,6 @@ def execute(filters):
 		
 	return columns, data
 
-
 def get_item_conditions(filters):
 	conditions = []
 	if filters.get("item_group"):
