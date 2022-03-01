@@ -16,9 +16,9 @@ ordered_items_map={}
 set_items_map={}
 
 def execute(filters):
-	all_items_map=get_all_items(filters)
-	ordered_items_map=get_ordered_items(filters)
-	set_items_map=get_sets_items(filters)
+	#all_items_map=get_all_items(filters)
+	#ordered_items_map=get_ordered_items(filters)
+	#set_items_map=get_sets_items(filters)
 	
 	columns = get_columns() 
 	
@@ -135,7 +135,7 @@ def get_dispatch_items(filters):
 			{'buyer': filters.foreign_buyer_name},as_dict=1)
 
 def get_all_items(filters):
-	all_items = frappe.db.sql("""
+	return frappe.db.sql("""
 		select 
 			item.item_code, item.item_name, item.stock_uom, item.is_stock_item
 		from 
@@ -144,14 +144,14 @@ def get_all_items(filters):
 			item.disabled=0 and item.buyer=%(buyer)s
 			{itm_conditions}""".format(itm_conditions=get_item_conditions(filters)),
 			{'buyer': filters.foreign_buyer_name},as_dict=1)
-
+"""
 	for d in all_items:
 		all_items_map.setdefault(d.item_code, frappe._dict())
 		all_items_map[d.item_code]["item_name"] = flt(d.item_name)
 		all_items_map[d.item_code]["stock_uom"]  = d.stock_uom
 		all_items_map[d.item_code]["is_stock_item"]  = d.is_stock_item
 	return all_items_map
-
+"""
 def get_sets_items(filters):
 		set_items =  frappe.db.sql("""
 		select 
@@ -171,7 +171,7 @@ def get_sets_items(filters):
 		
 		return set_items_map
 
-def get_ordered_items(filters, all_items):
+def get_ordered_items(filters, set_items):
 	ordered_items = frappe.db.sql("""
 		select 
 			so.name,
@@ -190,13 +190,30 @@ def get_ordered_items(filters, all_items):
 		as_dict=1) 
 
 	for d in ordered_items:
-		ordered_items_map.setdefault(d.item_code, frappe._dict())
-		ordered_items_map[d.item_code]["oqty"] = flt(d.ordered_qty)
-		ordered_items_map[d.item_code]["dqty"]  = flt(d.delivered_qty)
-		ordered_items_map[d.item_code]["uom"]  = d.uom
+		for i in set_items:
+			if d.item_code == i.item_code:
+				pkd_list=product_bundle_items(i.item_code)
+				for p in pkd_list:
+					if ordered_items_map[p.item_code]:
+						ordered_items_map[d.item_code]["oqty"] = +flt(d.ordered_qty)
+						ordered_items_map[d.item_code]["dqty"] = +flt(d.delivered_qty)
+					else:
+						ordered_items_map.setdefault(d.item_code, frappe._dict())
+						ordered_items_map[d.item_code]["oqty"] = +flt(d.ordered_qty)
+						ordered_items_map[d.item_code]["dqty"] = +flt(d.delivered_qty)
+						ordered_items_map[d.item_code]["uom"]  = d.uom
+			else:
+				if ordered_items_map[d.item_code]:
+					ordered_items_map[d.item_code]["oqty"] = +flt(d.ordered_qty)
+					ordered_items_map[d.item_code]["dqty"] = +flt(d.delivered_qty)
+				else:
+					ordered_items_map.setdefault(d.item_code, frappe._dict())
+					ordered_items_map[d.item_code]["oqty"] = +flt(d.ordered_qty)
+					ordered_items_map[d.item_code]["dqty"] = +flt(d.delivered_qty)
+					ordered_items_map[d.item_code]["uom"]  = d.uom		
 	return ordered_items_map
 
-def get_packed_items_one(filters):
+def get_items_one(filters):
 		return frappe.db.sql("""
 			select 
 				item.item_code, item.item_name, item.stock_uom
@@ -205,6 +222,42 @@ def get_packed_items_one(filters):
 			where 
 				item.disabled=0 and item.pch_pallet_size <=0 and item.buyer=%(buyer)s """,
 				{'buyer': filters.foreign_buyer},as_dict=1)
+
+def get_currents_stock_from_bin(item_code, warehouse):
+	item_stock_qty = frappe.db.sql("""
+		select 
+			ifnull(actual_qty,0) as actual_qty 
+		from 
+			`tabBin` 
+		where 
+			item_code = %s and warehouse = %s 
+		order by 
+			creation Desc limit 1""",
+			(item_code, warehouse),as_dict=1)
+	if item_stock_qty and item_stock_qty[0].actual_qty > 0:
+		return item_stock_qty[0].actual_qty
+	else:
+		return 0
+
+def get_balance_qty_from_slee(item_code,posting_date,warehouse):
+	balance_qty = frappe.db.sql("""select qty_after_transaction from `tabStock Ledger Entry`
+		where item_code=%s and posting_date < %s and 
+		warehouse = %s and is_cancelled='No'
+		order by posting_date desc, posting_time desc, name desc
+		limit 1""", (item_code, posting_date, warehouse))
+
+	return flt(balance_qty[0][0]) if balance_qty else 0.0
+
+def product_bundle_items(item_code):
+	return frappe.db.sql("""
+		select 
+			pb.new_item_code,
+			pbi.item_code as item_code,pbi.item_name as item_name,
+			pbi.qty as qty, pbi.uom as uom
+	 	from 
+			`tabProduct Bundle Item` pbi,`tabProduct Bundle` pb 
+		where 
+			pbi.parent=pb.name and pb.new_item_code = %s """,(item_code),as_dict=1)
 
 def dispatched_item_report(filters):
 	data = []
@@ -230,7 +283,7 @@ def dispatched_item_report(filters):
 
 def set_item_report(filters):
 	data = []
-	items = get_items(filters)
+	items = get_sets_items(filters)
 	ordered_items_map = get_ordered_items(filters)	
 	for i in items:
 		if i.is_stock_item:
@@ -238,11 +291,11 @@ def set_item_report(filters):
 			delivered_qty = ordered_items_map.get(i.item_code, {}).get("dqty")
 			uom = ordered_items_map.get(i.item_code,{}).get("uom") or i.stock_uom
 			pending_qty = flt(ordered_qty - delivered_qty) if ordered_qty and ordered_qty > delivered_qty else 0
-			closing_stock = get_currents_stock_from_bin(i.item_code)
-			op_stock = get_balance_qty_from_slee(i.item_code,filters.from_date)
+			closing_stock = get_currents_stock_from_bin(i.item_code, filters.warehouse)
+			op_stock = get_balance_qty_from_slee(i.item_code,filters.from_date, filters.warehouse)
 			remain_qty = flt(pending_qty - closing_stock) if pending_qty else 0
 			data.append([0,i.item_code, i.item_name, 1, uom, op_stock, "production_qty", ordered_qty,delivered_qty, pending_qty, closing_stock, remain_qty])
-			sub_items = get_sub_items(i.item_code)
+			sub_items = product_bundle_items(i.item_code)
 			for j in sub_items:
 				s_op_stock=get_balance_qty_from_slee(j.item_code,filters.from_date)
 				s_ordered_qty = flt(ordered_qty * j.qty) if j.qty and ordered_qty else 0
@@ -250,6 +303,6 @@ def set_item_report(filters):
 				s_pending_qty = flt(s_ordered_qty - s_delivered_qty)if s_ordered_qty and s_ordered_qty > s_delivered_qty else 0
 				s_closing_stock = get_currents_stock_from_bin(j.item_code)
 				s_remain_qty = flt(s_pending_qty - s_closing_stock) if s_pending_qty else 0
-				data.append([1, j.item_code, j.item_name, j.qty, j.uom,s_op_stock, "production_qty", s_ordered_qty,s_delivered_qty, s_pending_qty, s_closing_stock, s_remain_qty])
+				data.append([1, j.item_code, j.item_name, j.qty, j.uom,s_op_stock, " ", s_ordered_qty,s_delivered_qty, s_pending_qty, s_closing_stock, s_remain_qty])
 	
 	return data
