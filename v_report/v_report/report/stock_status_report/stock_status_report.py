@@ -28,6 +28,7 @@ def execute(filters):
 
 	elif filters.report_type == "Dispatched Item Report":
 		data = []
+		print("point 1.......")
 		data = dispatched_item_report(filters)
 
 	else:
@@ -160,8 +161,8 @@ def get_sets_items(filters):
 def get_ordered_items(filters, set_items):
 	ordered_items = frappe.db.sql("""
 		select 
-			so.name,
 			so_item.item_code as item_code,
+			so_item.item_name as item_name,
 			so_item.stock_uom as uom, 
 			ifnull(sum(so_item.qty),0) as ordered_qty,
 			ifnull(sum(so_item.delivered_qty),0) as delivered_qty 
@@ -174,28 +175,33 @@ def get_ordered_items(filters, set_items):
 			so_item.item_code""",
 			{'from_date':filters.from_date,'to_date':filters.to_date,'company':filters.company, 'buyer':filters.foreign_buyer_name},
 		as_dict=1) 
-
+	print("................")
+	print(ordered_items)
 	for d in ordered_items:
 		for i in set_items:
 			if d.item_code == i.item_code:
 				pkd_list=product_bundle_items(i.item_code)
 				for p in pkd_list:
 					if p.item_code in ordered_items_map:
-						ordered_items_map[d.item_code]["oqty"] = +flt(d.ordered_qty)
-						ordered_items_map[d.item_code]["dqty"] = +flt(d.delivered_qty)
+						#print("1st - " d.item_code "-" d.ordered_qty)
+						ordered_items_map[p.item_code]["oqty"] = ordered_items_map[p.item_code]["oqty"] + flt(d.ordered_qty * p.qty) if ordered_items_map[p.item_code] else flt(d.ordered_qty* p.qty)
+						ordered_items_map[p.item_code]["dqty"] = ordered_items_map[p.item_code]["dqty"] + flt(d.delivered_qty* p.qty) if ordered_items_map[p.item_code] else flt(d.delivered_qty * p.qty)
 					else:
-						ordered_items_map.setdefault(d.item_code, frappe._dict())
-						ordered_items_map[d.item_code]["oqty"] = +flt(d.ordered_qty)
-						ordered_items_map[d.item_code]["dqty"] = +flt(d.delivered_qty)
-						ordered_items_map[d.item_code]["uom"]  = d.uom
+						ordered_items_map.setdefault(p.item_code, frappe._dict())
+						#print("2nd - " d.item_code "-" d.ordered_qty)
+						ordered_items_map[p.item_code]["oqty"] = flt(d.ordered_qty * p.qty)
+						ordered_items_map[p.item_code]["dqty"] = flt(d.delivered_qty* p.qty)
+						ordered_items_map[p.item_code]["uom"]  = d.uom
 			else:
 				if d.item_code in ordered_items_map:
-					ordered_items_map[d.item_code]["oqty"] = +flt(d.ordered_qty)
-					ordered_items_map[d.item_code]["dqty"] = +flt(d.delivered_qty)
+					#print("3rd - " d.item_code "-" d.ordered_qty)
+					ordered_items_map[d.item_code]["oqty"] = ordered_items_map[d.item_code]["oqty"] + flt(d.ordered_qty) if ordered_items_map[d.item_code] else flt(d.ordered_qty)
+					ordered_items_map[d.item_code]["dqty"] = ordered_items_map[d.item_code]["dqty"] + flt(d.delivered_qty) if ordered_items_map[d.item_code] else flt(d.delivered_qty)
 				else:
 					ordered_items_map.setdefault(d.item_code, frappe._dict())
-					ordered_items_map[d.item_code]["oqty"] = +flt(d.ordered_qty)
-					ordered_items_map[d.item_code]["dqty"] = +flt(d.delivered_qty)
+					#print("4th - " d.item_code "-" d.ordered_qty)
+					ordered_items_map[d.item_code]["oqty"] = flt(d.ordered_qty)
+					ordered_items_map[d.item_code]["dqty"] = flt(d.delivered_qty)
 					ordered_items_map[d.item_code]["uom"]  = d.uom		
 	return ordered_items_map
 
@@ -250,10 +256,8 @@ def dispatched_item_report(filters):
 	dispatch_items = get_dispatch_items(filters)
 	set_items = get_sets_items(filters)
 	ordered_items_map = get_ordered_items(filters, set_items)
-	items = get_dispatch_items(filters)
 
 	for i in dispatch_items:
-		#s_item_name = i.item_name
 		s_op_stock = get_balance_qty_from_slee(i.item_code,filters.from_date, filters.warehouse)
 		s_ordered_qty = ordered_items_map.get(i.item_code, {}).get("oqty")
 		s_delivered_qty = ordered_items_map.get(i.item_code, {}).get("dqty")
@@ -265,24 +269,7 @@ def dispatched_item_report(filters):
 		print()
 		data.append([1, i.item_code, i.item_name, s_qty, s_uom, s_op_stock, "", s_ordered_qty, s_delivered_qty, s_pending_qty, s_closing_stock, s_remain_qty])
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+	return data
 
 def set_item_report(filters):
 	data = []
