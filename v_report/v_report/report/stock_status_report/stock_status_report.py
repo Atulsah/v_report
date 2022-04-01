@@ -11,15 +11,12 @@ from frappe.utils import flt
 from datetime import datetime,timedelta,date
 from frappe.utils import getdate, date_diff,add_days, add_years, cstr,formatdate, strip
 
-all_items_map={}
-ordered_items_map={}
-set_items_map={}
+#all_items_map={}
+#ordered_items_map={}
+#set_items_map={}
 
 def execute(filters):
-	#all_items_map=get_all_items(filters)
-	#ordered_items_map=get_ordered_items(filters)
-	#set_items_map=get_sets_items(filters)
-	
+
 	columns = get_columns() 
 	
 	if filters.report_type == "Set Item Report":
@@ -147,18 +144,20 @@ def get_all_items(filters):
 			{'buyer': filters.foreign_buyer_name},as_dict=1)
 
 def get_sets_items(filters):
-		return frappe.db.sql("""
-			select 
-				item.item_code, item.item_name, item.stock_uom, item.is_stock_item
-			from 
-				`tabItem` item 
-			where 
-				item.disabled=0 and item.is_stock_item=0 and item.buyer=%(buyer)s
-				{itm_conditions}""".format(itm_conditions=get_item_conditions(filters)),
-				{'buyer': filters.foreign_buyer_name},as_dict=1)
+	return frappe.db.sql("""
+		select 
+			item.item_code
+		from 
+			`tabItem` item 
+		where 
+			item.disabled=0 and item.is_stock_item=0 and item.buyer=%(buyer)s
+			{itm_conditions}""".format(itm_conditions=get_item_conditions(filters)),
+			{'buyer': filters.foreign_buyer_name},as_dict=1)
 		
 
 def get_ordered_items(filters, set_items):
+	ordered_items_map={}
+	#set_items_map={}
 	ordered_items = frappe.db.sql("""
 		select 
 			so_item.item_code as item_code,
@@ -177,33 +176,58 @@ def get_ordered_items(filters, set_items):
 		as_dict=1) 
 	print("................")
 	print(ordered_items)
+
 	for d in ordered_items:
+		print("Set Items : ")
+		print(set_items)
+		print(d.item_code in set_items)
 		for i in set_items:
 			if d.item_code == i.item_code:
-				pkd_list=product_bundle_items(i.item_code)
+				print(d.item_code)
+				pkd_list=product_bundle_items(d.item_code)
 				for p in pkd_list:
 					if p.item_code in ordered_items_map:
 						#print("1st - " d.item_code "-" d.ordered_qty)
-						ordered_items_map[p.item_code]["oqty"] = ordered_items_map[p.item_code]["oqty"] + flt(d.ordered_qty * p.qty) if ordered_items_map[p.item_code] else flt(d.ordered_qty* p.qty)
-						ordered_items_map[p.item_code]["dqty"] = ordered_items_map[p.item_code]["dqty"] + flt(d.delivered_qty* p.qty) if ordered_items_map[p.item_code] else flt(d.delivered_qty * p.qty)
+						ordered_items_map[p.item_code]["oqty"] = ordered_items_map[p.item_code]["oqty"] + flt(d.ordered_qty * p.qty) 
+						ordered_items_map[p.item_code]["dqty"] = ordered_items_map[p.item_code]["dqty"] + flt(d.delivered_qty* p.qty)
 					else:
 						ordered_items_map.setdefault(p.item_code, frappe._dict())
 						#print("2nd - " d.item_code "-" d.ordered_qty)
 						ordered_items_map[p.item_code]["oqty"] = flt(d.ordered_qty * p.qty)
 						ordered_items_map[p.item_code]["dqty"] = flt(d.delivered_qty* p.qty)
 						ordered_items_map[p.item_code]["uom"]  = d.uom
+
+		else:
+			if d.item_code in ordered_items_map:
+				#print("3rd - " d.item_code "-" d.ordered_qty)
+				ordered_items_map[d.item_code]["oqty"] = ordered_items_map[d.item_code]["oqty"] + flt(d.ordered_qty) 
+				ordered_items_map[d.item_code]["dqty"] = ordered_items_map[d.item_code]["dqty"] + flt(d.delivered_qty) 
 			else:
-				if d.item_code in ordered_items_map:
-					#print("3rd - " d.item_code "-" d.ordered_qty)
-					ordered_items_map[d.item_code]["oqty"] = ordered_items_map[d.item_code]["oqty"] + flt(d.ordered_qty) if ordered_items_map[d.item_code] else flt(d.ordered_qty)
-					ordered_items_map[d.item_code]["dqty"] = ordered_items_map[d.item_code]["dqty"] + flt(d.delivered_qty) if ordered_items_map[d.item_code] else flt(d.delivered_qty)
-				else:
-					ordered_items_map.setdefault(d.item_code, frappe._dict())
-					#print("4th - " d.item_code "-" d.ordered_qty)
-					ordered_items_map[d.item_code]["oqty"] = flt(d.ordered_qty)
-					ordered_items_map[d.item_code]["dqty"] = flt(d.delivered_qty)
-					ordered_items_map[d.item_code]["uom"]  = d.uom		
+				ordered_items_map.setdefault(d.item_code, frappe._dict())
+				#print("4th - " d.item_code "-" d.ordered_qty)
+				ordered_items_map[d.item_code]["oqty"] = flt(d.ordered_qty)
+				ordered_items_map[d.item_code]["dqty"] = flt(d.delivered_qty)
+				ordered_items_map[d.item_code]["uom"]  = d.uom
+		
+	
 	return ordered_items_map
+	
+	
+def production_qty(item_code,warehouse):
+	return frappe.db.sql("""
+		select
+			sted.item_code as item_code, ifnull(sum(sted.qty),0) as pqty 
+		from 
+			`tabStock Entry Detail` sted,`tabStock Entry` ste 
+		where 
+			ste.stock_entry_type = "Manufacture" and ste.to_warehouse =%(warehouse)s and 
+			ste.posting_date BETWEEN %(from_date)s and %(to_date)s 
+			and ste.company=%(company)s and stde.item_code = %(item)s and 
+			sted.parent=ste.name and ste.docstatus=1""",
+			{'from_date':filters.from_date,'to_date':filters.to_date,'company':filters.company, 
+			'item':item_code, 'warehouse':warehouse},
+		as_dict=1)
+
 
 def get_items_one(filters):
 		return frappe.db.sql("""
@@ -252,6 +276,9 @@ def product_bundle_items(item_code):
 			pbi.parent=pb.name and pb.new_item_code = %s """,(item_code),as_dict=1)
 
 def dispatched_item_report(filters):
+	#all_items_map={}
+	ordered_items_map={}
+	#set_items_map={}
 	data = []
 	dispatch_items = get_dispatch_items(filters)
 	set_items = get_sets_items(filters)
@@ -266,7 +293,8 @@ def dispatched_item_report(filters):
 		s_pending_qty = flt(s_ordered_qty - s_delivered_qty) if s_ordered_qty and s_ordered_qty > s_delivered_qty else 0
 		s_closing_stock = get_currents_stock_from_bin(i.item_code, filters.warehouse)
 		s_remain_qty = flt(s_pending_qty - s_closing_stock) if s_pending_qty else 0
-		print()
+		#s_production_qty = flt(production_qty(i.item_code, filters.warehouse))
+		#print(s_production_qty)
 		data.append([1, i.item_code, i.item_name, s_qty, s_uom, s_op_stock, "", s_ordered_qty, s_delivered_qty, s_pending_qty, s_closing_stock, s_remain_qty])
 
 	return data
