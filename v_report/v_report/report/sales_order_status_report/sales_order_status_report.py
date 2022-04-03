@@ -51,7 +51,6 @@ def get_ordered_items(filters):
 		from 
 			`tabSales Order Item` so_item,`tabSales Order` so
 		where 
-			so.transaction_date BETWEEN %(from_date)s and %(to_date)s and 
 			so.company=%(company)s and 
 			so.foreign_buyer_name=%(foreign_buyer_name)s and
 			so_item.parent=so.name and 
@@ -59,8 +58,8 @@ def get_ordered_items(filters):
 			{itm_conditions} 
 		order by 
 			so.delivery_date Asc """.format(itm_conditions=get_item_conditions(filters)),
-			{'from_date':filters.from_date,'to_date':filters.to_date,
-			'company':filters.company,'foreign_buyer_name':filters.foreign_buyer_name,'item_group': filters.item_group},as_dict=1) 
+			{'company':filters.company,'foreign_buyer_name':filters.foreign_buyer_name,
+			'item_group': filters.item_group},as_dict=1) 
 
 def get_dispatcheded_items(name, item_code):
 	return frappe.db.sql("""
