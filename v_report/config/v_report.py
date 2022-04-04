@@ -59,12 +59,6 @@ def get_data():
 					"name": "Sales Order Status Report",
 					"doctype": "Sales Order",
 				},	
-				#{
-				#	"type": "report",
-				#	"is_query_report": True,
-				#	"name": "Sales Order Status",
-				#	"doctype": "Sales Order",
-				#},
 				{
 					"type": "report",
 					"is_query_report": True,
