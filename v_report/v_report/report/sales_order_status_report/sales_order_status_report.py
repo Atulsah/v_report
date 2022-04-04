@@ -52,6 +52,7 @@ def get_ordered_items(filters):
 			`tabSales Order Item` so_item,`tabSales Order` so
 		where 
 			so.company=%(company)s and 
+			so_item.qty > so_item.delivered_qty and
 			so.foreign_buyer_name=%(foreign_buyer_name)s and
 			so_item.parent=so.name and 
 			so.docstatus=1 

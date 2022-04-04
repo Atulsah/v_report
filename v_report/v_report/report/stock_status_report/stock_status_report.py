@@ -43,29 +43,30 @@ def get_columns():
 	}]
 	columns.append({
 		"fieldname": "item_code",
-		"label": _("Items"),
+		"label": _("Item Code"),
 		"fieldtype": "Link",
 		"options": "Item",
-		"width": 150
+		"width": 100
 	})
 	columns.append({
 		"fieldname": "item_name",
-		"label": _("Items"),
+		"label": _("Item Name"),
 		"fieldtype": "data",
 		"width": 200
 	})
-	columns.append({
-		"fieldname": "qty",
-		"label": _("Quantity"),
-		"fieldtype": "data",
-		"width": 100
-	})
-	columns.append({
-		"fieldname": "uom",
-		"label": _("UOM"),
-		"fieldtype": "data",
-		"width": 100
-	})
+	"""	columns.append({
+			"fieldname": "qty",
+			"label": _("Quantity"),
+			"fieldtype": "data",
+			"width": 100
+		})
+		columns.append({
+			"fieldname": "uom",
+			"label": _("UOM"),
+			"fieldtype": "data",
+			"width": 100
+		})
+	"""
 	columns.append({
 		"fieldname": "opening_stock",
 		"label": _("Opening Stock"),
@@ -181,6 +182,7 @@ def get_ordered_items(filters, set_items):
 						ordered_items_map[p.item_code]["dqty"] = ordered_items_map[p.item_code]["dqty"] + flt(d.delivered_qty* p.qty)
 					else:
 						ordered_items_map.setdefault(p.item_code, frappe._dict())
+						ordered_items_map[p.item_code]["item_name"] = p.item_name
 						ordered_items_map[p.item_code]["oqty"] = flt(d.ordered_qty * p.qty)
 						ordered_items_map[p.item_code]["dqty"] = flt(d.delivered_qty* p.qty)
 						ordered_items_map[p.item_code]["uom"]  = d.uom
@@ -191,6 +193,7 @@ def get_ordered_items(filters, set_items):
 				ordered_items_map[d.item_code]["dqty"] = ordered_items_map[d.item_code]["dqty"] + flt(d.delivered_qty) 
 			else:
 				ordered_items_map.setdefault(d.item_code, frappe._dict())
+				ordered_items_map[d.item_code]["item_name"] = d.item_name
 				ordered_items_map[d.item_code]["oqty"] = flt(d.ordered_qty)
 				ordered_items_map[d.item_code]["dqty"] = flt(d.delivered_qty)
 				ordered_items_map[d.item_code]["uom"]  = d.uom
@@ -281,14 +284,14 @@ def dispatched_item_report(filters):
 		s_op_stock = get_balance_qty_from_slee(i.item_code,filters.from_date, filters.warehouse)
 		s_ordered_qty = ordered_items_map.get(i.item_code, {}).get("oqty")
 		s_delivered_qty = ordered_items_map.get(i.item_code, {}).get("dqty")
-		s_qty = ordered_items_map.get(i.item_code, {}).get("qty")
-		s_uom = ordered_items_map.get(i.item_code, {}).get("uom") or i.stock_uom
+		#s_qty = ordered_items_map.get(i.item_code, {}).get("qty")
+		#s_uom = ordered_items_map.get(i.item_code, {}).get("uom") or i.stock_uom
 		s_pending_qty = flt(s_ordered_qty - s_delivered_qty) if s_ordered_qty and s_ordered_qty > s_delivered_qty else 0
 		s_closing_stock = get_currents_stock_from_bin(i.item_code, filters.warehouse)
 		s_remain_qty = flt(s_pending_qty - s_closing_stock) if s_pending_qty else 0
 		s_production_qty = get_production_qty(filters,i.item_code)
 		print(s_production_qty)
-		data.append([1, i.item_code, i.item_name, s_qty, s_uom, s_op_stock, s_production_qty, s_ordered_qty, s_delivered_qty, s_pending_qty, s_closing_stock, s_remain_qty])
+		data.append([1, i.item_code, i.item_name, s_op_stock, s_production_qty, s_ordered_qty, s_delivered_qty, s_pending_qty, s_closing_stock, s_remain_qty])
 
 	return data
 
@@ -298,15 +301,16 @@ def set_item_report(filters):
 	ordered_items_map = get_ordered_set_items(filters, items)
 	print(ordered_items_map)
 	for i in items:
+		item_name = ordered_items_map.get(i.item_code, {}).get("item_name")
 		ordered_qty = ordered_items_map.get(i.item_code, {}).get("oqty")
 		delivered_qty = ordered_items_map.get(i.item_code, {}).get("dqty")
-		uom = ordered_items_map.get(i.item_code,{}).get("uom") or i.stock_uom
+		#uom = ordered_items_map.get(i.item_code,{}).get("uom") or i.stock_uom
 		pending_qty = flt(ordered_qty - delivered_qty) if ordered_qty and ordered_qty > delivered_qty else 0
 		closing_stock = get_currents_stock_from_bin(i.item_code, filters.warehouse)
 		production_qty = get_production_qty(filters,i.item_code)
 		op_stock = get_balance_qty_from_slee(i.item_code,filters.from_date, filters.warehouse)
 		remain_qty = flt(pending_qty - closing_stock) if pending_qty else 0
-		data.append([0,i.item_code, i.item_name, 1, uom, op_stock, production_qty, ordered_qty,delivered_qty, pending_qty, closing_stock, remain_qty])
+		data.append([0,i.item_code, item_name, op_stock, production_qty, ordered_qty,delivered_qty, pending_qty, closing_stock, remain_qty])
 		sub_items = product_bundle_items(i.item_code)
 		for j in sub_items:
 			s_op_stock=get_balance_qty_from_slee(j.item_code,filters.from_date,filters.warehouse)
@@ -316,7 +320,7 @@ def set_item_report(filters):
 			s_closing_stock = get_currents_stock_from_bin(j.item_code,filters.warehouse)
 			s_production_qty = get_production_qty(filters,j.item_code)
 			s_remain_qty = flt(s_pending_qty - s_closing_stock) if s_pending_qty else 0
-			data.append([1, j.item_code, j.item_name, j.qty, j.uom,s_op_stock, s_production_qty, s_ordered_qty,s_delivered_qty, s_pending_qty, s_closing_stock, s_remain_qty])
+			data.append([1, j.item_code, j.item_name, s_op_stock, s_production_qty, s_ordered_qty,s_delivered_qty, s_pending_qty, s_closing_stock, s_remain_qty])
 
 	return data
 
@@ -345,6 +349,7 @@ def get_ordered_set_items(filters, set_items):
 			ordered_items_map[d.item_code]["dqty"] = ordered_items_map[d.item_code]["dqty"] + flt(d.delivered_qty) 
 		else:
 			ordered_items_map.setdefault(d.item_code, frappe._dict())
+			ordered_items_map[d.item_code]["item_name"] = d.item_name
 			ordered_items_map[d.item_code]["oqty"] = flt(d.ordered_qty)
 			ordered_items_map[d.item_code]["dqty"] = flt(d.delivered_qty)
 			ordered_items_map[d.item_code]["uom"]  = d.uom
