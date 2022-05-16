@@ -1,8 +1,10 @@
-// Copyright (c) 2021, Frappe and contributors
+// Copyright (c) 2022, Frappe and contributors
 // For license information, please see license.txt
 
-frappe.ui.form.on('Equipment Register', {
+frappe.ui.form.on('Production', {
 	// refresh: function(frm) {
 
 	// }
+
+
 });
